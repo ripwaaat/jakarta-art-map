@@ -89,6 +89,32 @@ textarea { height:56px; resize:none; }
 .sync-dot.syncing { background:#BA7517; animation: pulse 1s ease-in-out infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 .error-msg { background:#FCEBEB; color:#A32D2D; border-radius:var(--border-radius-md); padding:8px 12px; font-size:12px; margin-bottom:10px; display:none; }
+
+/* Location picker (3 methods) */
+.method-tabs { display:flex; gap:6px; margin-bottom:14px; }
+.method-tab { flex:1; padding:8px 6px; font-size:12px; font-weight:500; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); background:transparent; cursor:pointer; color:var(--color-text-secondary); text-align:center; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:5px; }
+.method-tab.active { background:var(--color-background-info); color:var(--color-text-info); border-color:transparent; }
+.method-panel { display:none; }
+.method-panel.active { display:block; }
+.card-sub { font-size:11px; color:var(--color-text-secondary); margin-bottom:14px; margin-top:-6px; }
+.url-input-wrap { position:relative; }
+.url-input-wrap input { padding-right:78px; }
+.url-parse-btn { position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:500; background:var(--color-background-info); color:var(--color-text-info); border:none; border-radius:6px; padding:4px 10px; cursor:pointer; white-space:nowrap; }
+.url-result { margin-top:8px; font-size:12px; border-radius:var(--border-radius-md); padding:8px 10px; display:none; }
+.url-result.ok { background:#E1F5EE; color:#0F6E56; display:flex; align-items:center; gap:6px; }
+.url-result.err { background:#FCEBEB; color:#A32D2D; display:flex; align-items:center; gap:6px; }
+.url-tip { font-size:11px; color:var(--color-text-tertiary); margin-top:8px; line-height:1.6; }
+#picker-map { width:100%; height:280px; border-radius:var(--border-radius-md); border:0.5px solid var(--color-border-secondary); overflow:hidden; cursor:crosshair; }
+.map-tip-bar { font-size:11px; color:var(--color-text-secondary); margin-top:7px; display:flex; align-items:center; gap:5px; }
+.pin-result { margin-top:8px; font-size:12px; background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:8px 10px; color:var(--color-text-secondary); display:none; }
+.pin-result.show { display:flex; align-items:center; gap:6px; }
+.coord-display { margin-top:12px; padding:10px 12px; background:var(--color-background-secondary); border-radius:var(--border-radius-md); border:0.5px solid var(--color-border-tertiary); }
+.coord-display .coord-label { font-size:11px; color:var(--color-text-secondary); margin-bottom:5px; display:flex; align-items:center; gap:5px; }
+.coord-vals { display:flex; gap:10px; }
+.coord-val { flex:1; }
+.coord-val label { font-size:10px; color:var(--color-text-tertiary); display:block; margin-bottom:3px; }
+.coord-input { font-size:12px; font-family:var(--font-mono); width:100%; background:var(--color-background-primary); border:0.5px solid var(--color-border-secondary); border-radius:6px; padding:5px 8px; color:var(--color-text-primary); }
+.coord-input.has-value { border-color:#5DCAA5; color:#0F6E56; font-weight:500; }
 @media (max-width: 600px) {
   .tab-bar { display:none; }
   .bottom-nav { display:flex; }
@@ -151,104 +177,84 @@ textarea { height:56px; resize:none; }
     <div class="add-screen">
       <div class="error-msg" id="form-error"></div>
       <div class="form-card">
-    <h2><i class="ti ti-building" aria-hidden="true" style="font-size:14px;"></i>Gallery details</h2>
-    <p class="card-sub">Basic information about the gallery</p>
-    <div class="form-group"><label>Gallery name *</label><input type="text" id="new-name" placeholder="e.g. Galeri Nasional Indonesia"></div>
-    <div class="form-group"><label>Address *</label><input type="text" id="new-address" placeholder="e.g. Jl. Medan Merdeka Timur No.14, Gambir"></div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Size category</label>
-        <select id="new-size">
-          <option value="S">🌿 Small — under 200 sqm</option>
-          <option value="M" selected>🎨 Medium — 200–1000 sqm</option>
-          <option value="L">🏛️ Large — over 1000 sqm</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Operating status</label>
-        <select id="new-status">
-          <option value="active">Active</option>
-          <option value="temp">Temporarily closed</option>
-          <option value="perm">Permanently closed</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label>Instagram handle (optional)</label><input type="text" id="new-insta" placeholder="@galeri_name"></div>
-  </div>
-
-  <!-- Location picker -->
-  <div class="form-card">
-    <h2><i class="ti ti-map-pin" aria-hidden="true" style="font-size:14px;"></i>Location *</h2>
-    <p class="card-sub">Pick any method — coordinates sync automatically</p>
-
-    <div class="method-tabs">
-      <button class="method-tab active" onclick="switchMethod('url', this)"><i class="ti ti-link" aria-hidden="true" style="font-size:13px;"></i>Maps URL</button>
-      <button class="method-tab" onclick="switchMethod('map', this)"><i class="ti ti-map-pin" aria-hidden="true" style="font-size:13px;"></i>Drop a pin</button>
-      <button class="method-tab" onclick="switchMethod('manual', this)"><i class="ti ti-keyboard" aria-hidden="true" style="font-size:13px;"></i>Manual</button>
-    </div>
-
-    <!-- Method 1: URL paste -->
-    <div class="method-panel active" id="panel-url">
-      <div class="form-group" style="margin-bottom:0;">
-        <label>Paste any Google Maps link</label>
-        <div class="url-input-wrap">
-          <input type="text" id="maps-url" placeholder="https://maps.app.goo.gl/... or https://www.google.com/maps/..." oninput="onUrlInput()">
-          <button class="url-parse-btn" onclick="parseUrl()"><i class="ti ti-scan" aria-hidden="true" style="font-size:11px;margin-right:3px;"></i>Extract</button>
+        <h2><i class="ti ti-building" aria-hidden="true" style="font-size:14px;"></i>Gallery details</h2>
+        <p class="card-sub">Basic information about the gallery</p>
+        <div class="form-group"><label>Gallery name *</label><input type="text" id="new-name" placeholder="e.g. Galeri Nasional Indonesia"></div>
+        <div class="form-group"><label>Address *</label><input type="text" id="new-address" placeholder="e.g. Jl. Medan Merdeka Timur No.14, Gambir"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Size category</label>
+            <select id="new-size">
+              <option value="S">🌿 Small — under 200 sqm</option>
+              <option value="M" selected>🎨 Medium — 200–1000 sqm</option>
+              <option value="L">🏛️ Large — over 1000 sqm</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Operating status</label>
+            <select id="new-status">
+              <option value="active">Active</option>
+              <option value="temp">Temporarily closed</option>
+              <option value="perm">Permanently closed</option>
+            </select>
+          </div>
         </div>
-        <div class="url-result" id="url-result"></div>
-        <div class="url-tip">
-          <strong>How to get the link:</strong> Open Google Maps → search for the gallery → tap <strong>Share</strong> → copy link. Works with short links (maps.app.goo.gl) and full links.
-        </div>
+        <div class="form-group"><label>Instagram handle (optional)</label><input type="text" id="new-insta" placeholder="@galeri_name"></div>
       </div>
-    </div>
-
-    <!-- Method 2: Map pin -->
-    <div class="method-panel" id="panel-map">
-      <div id="picker-map"></div>
-      <div class="map-tip-bar"><i class="ti ti-hand-click" aria-hidden="true" style="font-size:13px;"></i>Click anywhere on the map to drop a pin at that location</div>
-      <div class="pin-result" id="pin-result"><i class="ti ti-check" aria-hidden="true" style="font-size:13px;color:#0F6E56;"></i><span id="pin-text"></span></div>
-    </div>
-
-    <!-- Method 3: Manual -->
-    <div class="method-panel" id="panel-manual">
-      <div class="form-row" style="margin-bottom:0;">
-        <div class="form-group" style="margin-bottom:0;">
-          <label>Latitude</label>
-          <input type="number" id="manual-lat" placeholder="-6.1865" step="0.000001" oninput="onManualInput()">
+      <div class="form-card">
+        <h2><i class="ti ti-map-pin" aria-hidden="true" style="font-size:14px;"></i>Location *</h2>
+        <p class="card-sub">Pick any method — coordinates sync automatically</p>
+        <div class="method-tabs">
+          <button class="method-tab active" onclick="switchMethod('url', this)"><i class="ti ti-link" aria-hidden="true" style="font-size:13px;"></i>Maps URL</button>
+          <button class="method-tab" onclick="switchMethod('map', this)"><i class="ti ti-map-pin" aria-hidden="true" style="font-size:13px;"></i>Drop a pin</button>
+          <button class="method-tab" onclick="switchMethod('manual', this)"><i class="ti ti-keyboard" aria-hidden="true" style="font-size:13px;"></i>Manual</button>
         </div>
-        <div class="form-group" style="margin-bottom:0;">
-          <label>Longitude</label>
-          <input type="number" id="manual-lng" placeholder="106.8226" step="0.000001" oninput="onManualInput()">
+        <div class="method-panel active" id="panel-url">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Paste any Google Maps link</label>
+            <div class="url-input-wrap">
+              <input type="text" id="maps-url" placeholder="https://maps.app.goo.gl/... or https://www.google.com/maps/..." oninput="onUrlInput()">
+              <button class="url-parse-btn" onclick="parseUrl()"><i class="ti ti-scan" aria-hidden="true" style="font-size:11px;margin-right:3px;"></i>Extract</button>
+            </div>
+            <div class="url-result" id="url-result"></div>
+            <div class="url-tip"><strong>How to get the link:</strong> Open Google Maps → search the gallery → tap <strong>Share</strong> → copy link. Works with short links (maps.app.goo.gl) and full links.</div>
+          </div>
+        </div>
+        <div class="method-panel" id="panel-map">
+          <div id="picker-map"></div>
+          <div class="map-tip-bar"><i class="ti ti-hand-click" aria-hidden="true" style="font-size:13px;"></i>Click anywhere on the map to drop a pin at that location</div>
+          <div class="pin-result" id="pin-result"><i class="ti ti-check" aria-hidden="true" style="font-size:13px;color:#0F6E56;"></i><span id="pin-text"></span></div>
+        </div>
+        <div class="method-panel" id="panel-manual">
+          <div class="form-row" style="margin-bottom:0;">
+            <div class="form-group" style="margin-bottom:0;"><label>Latitude</label><input type="number" id="manual-lat" placeholder="-6.1865" step="0.000001" oninput="onManualInput()"></div>
+            <div class="form-group" style="margin-bottom:0;"><label>Longitude</label><input type="number" id="manual-lng" placeholder="106.8226" step="0.000001" oninput="onManualInput()"></div>
+          </div>
+          <div class="url-tip" style="margin-top:8px;">Right-click any spot in Google Maps on desktop → the coordinates appear at the top of the context menu.</div>
+        </div>
+        <div class="coord-display">
+          <div class="coord-label"><i class="ti ti-current-location" aria-hidden="true" style="font-size:12px;"></i>Coordinates — shared by all methods above</div>
+          <div class="coord-vals">
+            <div class="coord-val"><label>Latitude</label><input class="coord-input" id="coord-lat" type="number" step="0.000001" placeholder="—" oninput="onCoordEdit()"></div>
+            <div class="coord-val"><label>Longitude</label><input class="coord-input" id="coord-lng" type="number" step="0.000001" placeholder="—" oninput="onCoordEdit()"></div>
+          </div>
         </div>
       </div>
-      <div class="url-tip" style="margin-top:8px;">Right-click any spot in Google Maps on desktop → the coordinates appear at the top of the context menu.</div>
-    </div>
-
-    <!-- Unified coordinate display -->
-    <div class="coord-display" id="coord-display">
-      <div class="coord-label"><i class="ti ti-current-location" aria-hidden="true" style="font-size:12px;"></i>Coordinates — shared by all methods above</div>
-      <div class="coord-vals">
-        <div class="coord-val">
-          <label>Latitude</label>
-          <input class="coord-input" id="coord-lat" type="number" step="0.000001" placeholder="—" oninput="onCoordEdit('lat')">
-        </div>
-        <div class="coord-val">
-          <label>Longitude</label>
-          <input class="coord-input" id="coord-lng" type="number" step="0.000001" placeholder="—" oninput="onCoordEdit('lng')">
-        </div>
+      <div class="form-card">
+        <h2><i class="ti ti-calendar-event" aria-hidden="true" style="font-size:14px;"></i>Exhibition info <span style="font-weight:400;color:var(--color-text-secondary);font-size:12px;">(optional)</span></h2>
+        <div class="form-group"><label>Exhibition note</label><textarea id="new-exhibition" placeholder="e.g. 'Resonance' by Eko Nugroho — until 30 June 2026"></textarea></div>
+        <div class="form-group"><label>Instagram post URL</label><input type="text" id="new-insta-post" placeholder="https://www.instagram.com/p/ABC123/"></div>
       </div>
+      <button class="btn-save" id="save-btn" onclick="addGallery()"><i class="ti ti-plus" aria-hidden="true"></i>Save to archive</button>
+      <p class="hint" style="text-align:center;"><i class="ti ti-users" aria-hidden="true" style="font-size:11px;margin-right:3px;"></i>New galleries are immediately visible to all users.</p>
     </div>
   </div>
 
-  <!-- Exhibition -->
-  <div class="form-card">
-    <h2><i class="ti ti-calendar-event" aria-hidden="true" style="font-size:14px;"></i>Exhibition info <span style="font-weight:400;color:var(--color-text-secondary);font-size:12px;">(optional)</span></h2>
-    <div class="form-group"><label>Exhibition note</label><textarea id="new-exhibition" placeholder="e.g. 'Resonance' by Eko Nugroho — until 30 June 2026"></textarea></div>
-    <div class="form-group" style="margin-bottom:0;"><label>Instagram post URL</label><input type="text" id="new-insta-post" placeholder="https://www.instagram.com/p/ABC123/"></div>
-  </div>
-
-  <button class="btn-save" id="save-btn" onclick="submitGallery()"><i class="ti ti-plus" aria-hidden="true"></i>Save to archive</button>
-  <p class="hint" style="text-align:center;margin-top:8px;">New galleries are immediately visible to all users</p>
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-map" onclick="switchScreen('map',this)"><i class="ti ti-map" aria-hidden="true"></i>Map</button>
+    <button class="nav-btn" id="nav-list" onclick="switchScreen('list',this)"><i class="ti ti-layout-list" aria-hidden="true"></i>Galleries</button>
+    <button class="nav-btn" id="nav-add" onclick="switchScreen('add',this)"><i class="ti ti-circle-plus" aria-hidden="true"></i>Add</button>
+  </nav>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -507,13 +513,127 @@ function switchScreen(screen, btn) {
   document.querySelectorAll('.tab, .nav-btn').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   if (screen==='map') setTimeout(()=>{ initMap(); map.invalidateSize(); }, 80);
+  if (screen==='add') setTimeout(()=>{ if (pickerMap) pickerMap.invalidateSize(); }, 80);
+}
+
+// ===== Location picker (3 coordinate methods) =====
+let pickerMap = null;
+let pickerMarker = null;
+let currentLat = null;
+let currentLng = null;
+
+function switchMethod(method, btn) {
+  document.querySelectorAll('.method-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.method-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + method).classList.add('active');
+  if (method === 'map') initPickerMap();
+}
+
+function initPickerMap() {
+  if (pickerMap) { setTimeout(()=>pickerMap.invalidateSize(), 80); return; }
+  pickerMap = L.map('picker-map', { zoomControl:true }).setView([-6.2088, 106.8456], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'© OpenStreetMap', maxZoom:18 }).addTo(pickerMap);
+  pickerMap.on('click', function(e) {
+    const { lat, lng } = e.latlng;
+    setCoords(lat, lng, 'map');
+    if (pickerMarker) pickerMarker.remove();
+    pickerMarker = L.marker([lat, lng]).addTo(pickerMap);
+    document.getElementById('pin-text').textContent = `Pin dropped at ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    document.getElementById('pin-result').classList.add('show');
+  });
+}
+
+function setCoords(lat, lng, source) {
+  currentLat = lat; currentLng = lng;
+  const latEl = document.getElementById('coord-lat');
+  const lngEl = document.getElementById('coord-lng');
+  latEl.value = lat.toFixed(6); lngEl.value = lng.toFixed(6);
+  latEl.classList.add('has-value'); lngEl.classList.add('has-value');
+  if (source !== 'manual') {
+    document.getElementById('manual-lat').value = lat.toFixed(6);
+    document.getElementById('manual-lng').value = lng.toFixed(6);
+  }
+  if (source !== 'map' && pickerMap) {
+    if (pickerMarker) pickerMarker.remove();
+    pickerMarker = L.marker([lat, lng]).addTo(pickerMap);
+    pickerMap.panTo([lat, lng]);
+  }
+}
+
+function onManualInput() {
+  const lat = parseFloat(document.getElementById('manual-lat').value);
+  const lng = parseFloat(document.getElementById('manual-lng').value);
+  if (!isNaN(lat) && !isNaN(lng)) setCoords(lat, lng, 'manual');
+}
+
+function onCoordEdit() {
+  const lat = parseFloat(document.getElementById('coord-lat').value);
+  const lng = parseFloat(document.getElementById('coord-lng').value);
+  if (!isNaN(lat) && !isNaN(lng)) setCoords(lat, lng, 'coord');
+}
+
+function extractCoordsFromUrl(url) {
+  const patterns = [
+    /@(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/,
+    /q=(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /ll=(-?\d+\.\d+),(-?\d+\.\d+)/,
+    /place\/[^\/]+\/@(-?\d+\.\d+),(-?\d+\.\d+)/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  }
+  return null;
+}
+
+function onUrlInput() {
+  const url = document.getElementById('maps-url').value.trim();
+  if (url.length > 20 && extractCoordsFromUrl(url)) parseUrl();
+}
+
+async function parseUrl() {
+  const url = document.getElementById('maps-url').value.trim();
+  const resultEl = document.getElementById('url-result');
+  if (!url) return;
+  resultEl.className = 'url-result'; resultEl.style.display = 'none';
+  let coords = extractCoordsFromUrl(url);
+  if (!coords && (url.includes('maps.app.goo.gl') || url.includes('goo.gl/maps'))) {
+    resultEl.innerHTML = '<i class="ti ti-loader" aria-hidden="true" style="font-size:13px;animation:spin 0.8s linear infinite;"></i> Resolving short link...';
+    resultEl.className = 'url-result ok'; resultEl.style.display = 'flex';
+    try {
+      const r = await fetch('https://corsproxy.io/?' + encodeURIComponent(url));
+      const text = await r.text();
+      const match = text.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || text.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+      if (match) coords = { lat: parseFloat(match[1]), lng: parseFloat(match[2]) };
+    } catch(e) {}
+  }
+  if (coords && coords.lat >= -90 && coords.lat <= 90 && coords.lng >= -180 && coords.lng <= 180) {
+    setCoords(coords.lat, coords.lng, 'url');
+    resultEl.innerHTML = `<i class="ti ti-check" aria-hidden="true" style="font-size:13px;"></i> Found: ${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`;
+    resultEl.className = 'url-result ok'; resultEl.style.display = 'flex';
+  } else {
+    resultEl.innerHTML = `<i class="ti ti-alert-circle" aria-hidden="true" style="font-size:13px;"></i> Couldn't extract coordinates. Try a full Google Maps link or use "Drop a pin" instead.`;
+    resultEl.className = 'url-result err'; resultEl.style.display = 'flex';
+  }
+}
+
+function resetLocationPicker() {
+  currentLat = null; currentLng = null;
+  ['coord-lat','coord-lng','manual-lat','manual-lng','maps-url'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('coord-lat').classList.remove('has-value');
+  document.getElementById('coord-lng').classList.remove('has-value');
+  document.getElementById('url-result').style.display = 'none';
+  document.getElementById('pin-result').classList.remove('show');
+  if (pickerMarker) { pickerMarker.remove(); pickerMarker = null; }
 }
 
 async function addGallery() {
   const name = document.getElementById('new-name').value.trim();
   const address = document.getElementById('new-address').value.trim();
-  const lat = parseFloat(document.getElementById('new-lat').value);
-  const lng = parseFloat(document.getElementById('new-lng').value);
+  const lat = currentLat;
+  const lng = currentLng;
   const size = document.getElementById('new-size').value;
   const status = document.getElementById('new-status').value;
   const instagram = document.getElementById('new-insta').value.trim();
@@ -523,8 +643,8 @@ async function addGallery() {
   const errEl = document.getElementById('form-error');
   errEl.style.display = 'none';
 
-  if (!name || !address || isNaN(lat) || isNaN(lng)) {
-    errEl.textContent = 'Please fill in name, address, latitude, and longitude.';
+  if (!name || !address || lat === null || lng === null || isNaN(lat) || isNaN(lng)) {
+    errEl.textContent = 'Please fill in name, address, and set the location using one of the three methods.';
     errEl.style.display = 'block';
     return;
   }
@@ -540,9 +660,10 @@ async function addGallery() {
       body: JSON.stringify({ name, address, lat, lng, size, status, instagram: instagram||null, exhibition: exhibition||null, insta_post: insta_post||null })
     });
     if (result && result[0]) galleries.push(result[0]);
-    ['new-name','new-address','new-lat','new-lng','new-insta','new-exhibition','new-insta-post'].forEach(id=>document.getElementById(id).value='');
+    ['new-name','new-address','new-insta','new-exhibition','new-insta-post'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('new-size').value='M';
     document.getElementById('new-status').value='active';
+    resetLocationPicker();
     switchScreen('map', document.querySelector('.tab') || document.getElementById('nav-map'));
     render();
     showToast('Gallery saved — visible to all users');
