@@ -323,6 +323,138 @@ textarea {
   }
 }
 
+
+html, body {
+  min-height: 100%;
+  background: #f4f1e8;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+}
+
+.app {
+  min-height: 100dvh;
+  background:
+    linear-gradient(to bottom, #f7f5ef 0%, #f4f1e8 100%);
+}
+
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#screen-map {
+  min-height: calc(100dvh - 150px);
+}
+
+#map {
+  border-radius: 18px;
+  overflow: hidden;
+  margin: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.map-legend {
+  margin: 0 12px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.stats-row {
+  position: sticky;
+  top: 60px;
+  z-index: 50;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(10px);
+}
+
+.stat {
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.95),
+    rgba(255,255,255,0.75)
+  );
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+.gallery-card,
+.form-card {
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(10px);
+}
+
+.archived-note {
+  margin: 10px 12px 0;
+  border-radius: 12px;
+}
+
+.list-toolbar {
+  margin: 0 0 6px;
+}
+
+@media (min-width: 1024px) {
+  .app {
+    max-width: 1400px;
+  }
+
+  #screen-map {
+    padding: 14px;
+  }
+
+  #map {
+    margin: 0;
+    height: calc(100dvh - 240px);
+  }
+
+  .map-legend {
+    margin: 12px 0 0;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    background: #f7f5ef;
+  }
+
+  .top-bar {
+    border-radius: 0 0 18px 18px;
+  }
+
+  .stats-row {
+    top: 72px;
+  }
+
+  #screen-map {
+    min-height: auto;
+  }
+
+  #map {
+    margin: 10px;
+    height: 50dvh;
+  }
+
+  .map-legend {
+    margin: 0 10px 10px;
+  }
+
+  .gallery-grid {
+    padding-bottom: 90px;
+  }
+
+  .add-screen {
+    padding-bottom: 100px;
+  }
+}
+
 </style>
 
 <h2 class="sr-only">Jakarta Art Gallery Archive — connected to Supabase. Shared gallery data, private visited status.</h2>
@@ -346,7 +478,7 @@ textarea {
     <button class="tab" onclick="switchScreen('add',this)"><i class="ti ti-circle-plus" aria-hidden="true" style="font-size:13px;margin-right:5px;"></i>Add gallery</button>
   </div>
 
-  <div class="screen" id="screen-map">
+  <div class="screen" id="screen-map" style="justify-content:flex-start;">
     <div id="map"></div>
     <div class="map-legend">
       <div class="legend-item"><div class="legend-dot" style="background:#EAF3DE;">🌿</div>Small &lt;200 sqm</div>
