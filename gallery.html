@@ -439,8 +439,7 @@ body {
 
   #map {
     margin: 10px;
-    height: 50dvh;
-  }
+}
 
   .map-legend {
     margin: 0 10px 10px;
@@ -452,6 +451,51 @@ body {
 
   .add-screen {
     padding-bottom: 100px;
+  }
+}
+
+
+@media (max-width: 768px) {
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+  }
+
+  .app {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .screen {
+    flex: 1;
+    min-height: auto;
+  }
+
+  #screen-map {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: calc(100dvh - 140px);
+  }
+
+  #map {
+    flex: 1;
+    height: calc(100dvh - 260px) !important;
+    min-height: 420px;
+    max-height: none;
+  }
+
+  .map-legend {
+    flex-shrink: 0;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
   }
 }
 
