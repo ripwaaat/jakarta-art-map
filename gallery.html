@@ -151,48 +151,104 @@ textarea { height:56px; resize:none; }
     <div class="add-screen">
       <div class="error-msg" id="form-error"></div>
       <div class="form-card">
-        <h2><i class="ti ti-building" aria-hidden="true" style="font-size:14px;"></i>Gallery details</h2>
-        <div class="form-group"><label>Gallery name *</label><input type="text" id="new-name" placeholder="e.g. Galeri Nasional Indonesia"></div>
-        <div class="form-group"><label>Address *</label><input type="text" id="new-address" placeholder="e.g. Jl. Medan Merdeka Timur No.14, Gambir"></div>
-        <div class="form-row">
-          <div class="form-group"><label>Latitude *</label><input type="number" id="new-lat" placeholder="-6.1865" step="0.0001"></div>
-          <div class="form-group"><label>Longitude *</label><input type="number" id="new-lng" placeholder="106.8226" step="0.0001"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Size category</label>
-            <select id="new-size">
-              <option value="S">🌿 Small — under 200 sqm</option>
-              <option value="M" selected>🎨 Medium — 200–1000 sqm</option>
-              <option value="L">🏛️ Large — over 1000 sqm</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Operating status</label>
-            <select id="new-status">
-              <option value="active">Active</option>
-              <option value="temp">Temporarily closed</option>
-              <option value="perm">Permanently closed</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group"><label>Instagram handle (optional)</label><input type="text" id="new-insta" placeholder="@galeri_name"></div>
+    <h2><i class="ti ti-building" aria-hidden="true" style="font-size:14px;"></i>Gallery details</h2>
+    <p class="card-sub">Basic information about the gallery</p>
+    <div class="form-group"><label>Gallery name *</label><input type="text" id="new-name" placeholder="e.g. Galeri Nasional Indonesia"></div>
+    <div class="form-group"><label>Address *</label><input type="text" id="new-address" placeholder="e.g. Jl. Medan Merdeka Timur No.14, Gambir"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Size category</label>
+        <select id="new-size">
+          <option value="S">🌿 Small — under 200 sqm</option>
+          <option value="M" selected>🎨 Medium — 200–1000 sqm</option>
+          <option value="L">🏛️ Large — over 1000 sqm</option>
+        </select>
       </div>
-      <div class="form-card">
-        <h2><i class="ti ti-calendar-event" aria-hidden="true" style="font-size:14px;"></i>Exhibition info <span style="font-weight:400;color:var(--color-text-secondary);font-size:12px;">(optional)</span></h2>
-        <div class="form-group"><label>Exhibition note</label><textarea id="new-exhibition" placeholder="e.g. 'Resonance' by Eko Nugroho — until 30 June 2026"></textarea></div>
-        <div class="form-group"><label>Instagram post URL</label><input type="text" id="new-insta-post" placeholder="https://www.instagram.com/p/ABC123/"></div>
+      <div class="form-group">
+        <label>Operating status</label>
+        <select id="new-status">
+          <option value="active">Active</option>
+          <option value="temp">Temporarily closed</option>
+          <option value="perm">Permanently closed</option>
+        </select>
       </div>
-      <button class="btn-save" id="save-btn" onclick="addGallery()"><i class="ti ti-plus" aria-hidden="true"></i>Save to archive</button>
-      <p class="hint"><i class="ti ti-map-pin" aria-hidden="true" style="font-size:11px;margin-right:3px;"></i>Tip: right-click any spot in Google Maps to copy its coordinates.</p>
+    </div>
+    <div class="form-group"><label>Instagram handle (optional)</label><input type="text" id="new-insta" placeholder="@galeri_name"></div>
+  </div>
+
+  <!-- Location picker -->
+  <div class="form-card">
+    <h2><i class="ti ti-map-pin" aria-hidden="true" style="font-size:14px;"></i>Location *</h2>
+    <p class="card-sub">Pick any method — coordinates sync automatically</p>
+
+    <div class="method-tabs">
+      <button class="method-tab active" onclick="switchMethod('url', this)"><i class="ti ti-link" aria-hidden="true" style="font-size:13px;"></i>Maps URL</button>
+      <button class="method-tab" onclick="switchMethod('map', this)"><i class="ti ti-map-pin" aria-hidden="true" style="font-size:13px;"></i>Drop a pin</button>
+      <button class="method-tab" onclick="switchMethod('manual', this)"><i class="ti ti-keyboard" aria-hidden="true" style="font-size:13px;"></i>Manual</button>
+    </div>
+
+    <!-- Method 1: URL paste -->
+    <div class="method-panel active" id="panel-url">
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Paste any Google Maps link</label>
+        <div class="url-input-wrap">
+          <input type="text" id="maps-url" placeholder="https://maps.app.goo.gl/... or https://www.google.com/maps/..." oninput="onUrlInput()">
+          <button class="url-parse-btn" onclick="parseUrl()"><i class="ti ti-scan" aria-hidden="true" style="font-size:11px;margin-right:3px;"></i>Extract</button>
+        </div>
+        <div class="url-result" id="url-result"></div>
+        <div class="url-tip">
+          <strong>How to get the link:</strong> Open Google Maps → search for the gallery → tap <strong>Share</strong> → copy link. Works with short links (maps.app.goo.gl) and full links.
+        </div>
+      </div>
+    </div>
+
+    <!-- Method 2: Map pin -->
+    <div class="method-panel" id="panel-map">
+      <div id="picker-map"></div>
+      <div class="map-tip-bar"><i class="ti ti-hand-click" aria-hidden="true" style="font-size:13px;"></i>Click anywhere on the map to drop a pin at that location</div>
+      <div class="pin-result" id="pin-result"><i class="ti ti-check" aria-hidden="true" style="font-size:13px;color:#0F6E56;"></i><span id="pin-text"></span></div>
+    </div>
+
+    <!-- Method 3: Manual -->
+    <div class="method-panel" id="panel-manual">
+      <div class="form-row" style="margin-bottom:0;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Latitude</label>
+          <input type="number" id="manual-lat" placeholder="-6.1865" step="0.000001" oninput="onManualInput()">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Longitude</label>
+          <input type="number" id="manual-lng" placeholder="106.8226" step="0.000001" oninput="onManualInput()">
+        </div>
+      </div>
+      <div class="url-tip" style="margin-top:8px;">Right-click any spot in Google Maps on desktop → the coordinates appear at the top of the context menu.</div>
+    </div>
+
+    <!-- Unified coordinate display -->
+    <div class="coord-display" id="coord-display">
+      <div class="coord-label"><i class="ti ti-current-location" aria-hidden="true" style="font-size:12px;"></i>Coordinates — shared by all methods above</div>
+      <div class="coord-vals">
+        <div class="coord-val">
+          <label>Latitude</label>
+          <input class="coord-input" id="coord-lat" type="number" step="0.000001" placeholder="—" oninput="onCoordEdit('lat')">
+        </div>
+        <div class="coord-val">
+          <label>Longitude</label>
+          <input class="coord-input" id="coord-lng" type="number" step="0.000001" placeholder="—" oninput="onCoordEdit('lng')">
+        </div>
+      </div>
     </div>
   </div>
 
-  <nav class="bottom-nav">
-    <button class="nav-btn active" id="nav-map" onclick="switchScreen('map',this)"><i class="ti ti-map" aria-hidden="true"></i>Map</button>
-    <button class="nav-btn" id="nav-list" onclick="switchScreen('list',this)"><i class="ti ti-layout-list" aria-hidden="true"></i>Galleries</button>
-    <button class="nav-btn" id="nav-add" onclick="switchScreen('add',this)"><i class="ti ti-circle-plus" aria-hidden="true"></i>Add</button>
-  </nav>
+  <!-- Exhibition -->
+  <div class="form-card">
+    <h2><i class="ti ti-calendar-event" aria-hidden="true" style="font-size:14px;"></i>Exhibition info <span style="font-weight:400;color:var(--color-text-secondary);font-size:12px;">(optional)</span></h2>
+    <div class="form-group"><label>Exhibition note</label><textarea id="new-exhibition" placeholder="e.g. 'Resonance' by Eko Nugroho — until 30 June 2026"></textarea></div>
+    <div class="form-group" style="margin-bottom:0;"><label>Instagram post URL</label><input type="text" id="new-insta-post" placeholder="https://www.instagram.com/p/ABC123/"></div>
+  </div>
+
+  <button class="btn-save" id="save-btn" onclick="submitGallery()"><i class="ti ti-plus" aria-hidden="true"></i>Save to archive</button>
+  <p class="hint" style="text-align:center;margin-top:8px;">New galleries are immediately visible to all users</p>
 </div>
 
 <div class="toast" id="toast"></div>
