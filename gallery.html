@@ -63,6 +63,7 @@ body { font-family: var(--font-sans); background: var(--color-background-tertiar
 .tab { padding: 10px 18px; font-size: 13px; cursor: pointer; color: var(--color-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; transition: all 0.15s; white-space: nowrap; }
 .tab.active { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); font-weight: 500; }
 .screen { flex: 1; overflow-y: auto; }
+
 #map {
   width: 100%;
   height: 52dvh;
@@ -70,12 +71,6 @@ body { font-family: var(--font-sans); background: var(--color-background-tertiar
   max-height: 620px;
 }
 
-@media (max-width: 480px) {
-  #map {
-    height: 46dvh;
-    min-height: 280px;
-  }
-}
 .map-legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 16px; background: var(--color-background-primary); border-top: 0.5px solid var(--color-border-tertiary); }
 .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
 .legend-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
@@ -90,7 +85,6 @@ body { font-family: var(--font-sans); background: var(--color-background-tertiar
   gap: 12px;
   align-items: start;
 }
-@media (max-width: 600px) { .gallery-grid { grid-template-columns: 1fr; padding: 8px 10px; gap: 8px; } }
 .gallery-card {
   background: var(--color-background-primary);
   border: 0.5px solid var(--color-border-tertiary);
@@ -148,7 +142,6 @@ body { font-family: var(--font-sans); background: var(--color-background-tertiar
   margin: 0 auto;
   padding: 14px;
 }
-@media (max-width: 600px) { .add-screen { padding: 12px; } }
 .form-card { background:var(--color-background-primary); border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); padding:16px; margin-bottom:12px; }
 .form-card h2 { font-size:14px; font-weight:500; color:var(--color-text-primary); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -189,7 +182,7 @@ textarea { height:56px; resize:none; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 .error-msg { background:#FCEBEB; color:#A32D2D; border-radius:var(--border-radius-md); padding:8px 12px; font-size:12px; margin-bottom:10px; display:none; }
 
-/* Location picker (3 methods) */
+/* Location picker */
 .method-tabs { display:flex; gap:6px; margin-bottom:14px; }
 .method-tab { flex:1; padding:8px 6px; font-size:12px; font-weight:500; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); background:transparent; cursor:pointer; color:var(--color-text-secondary); text-align:center; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:5px; }
 .method-tab.active { background:var(--color-background-info); color:var(--color-text-info); border-color:transparent; }
@@ -214,149 +207,33 @@ textarea { height:56px; resize:none; }
 .coord-val label { font-size:10px; color:var(--color-text-tertiary); display:block; margin-bottom:3px; }
 .coord-input { font-size:12px; font-family:var(--font-mono); width:100%; background:var(--color-background-primary); border:0.5px solid var(--color-border-secondary); border-radius:6px; padding:5px 8px; color:var(--color-text-primary); }
 .coord-input.has-value { border-color:#5DCAA5; color:#0F6E56; font-weight:500; }
-@media (max-width: 600px) {
-  .tab-bar { display:none; }
-  .bottom-nav { display:flex; }
-  .screen { padding-bottom: 58px; }
-  .stats-row { padding:10px 12px; gap:6px; }
-  .stat {
-  background: var(--color-background-secondary);
-  border-radius: 12px;
-  padding: 12px;
-}
-  .stat-value { font-size:17px; }
-}
-
-@media (min-width: 700px) {
-  .stats-row {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.card-name {
-  font-size: 15px;
-  line-height: 1.4;
-}
-
-.card-address {
-  line-height: 1.5;
-}
-
-.form-card {
-  border-radius: 18px;
-}
-
-input,
-select,
-textarea {
-  min-height: 46px;
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-textarea {
-  min-height: 90px;
-}
-
-@media (max-width: 768px) {
-  .tab-bar {
-    display: none;
-  }
-
-  .bottom-nav {
-    display: flex;
-  }
-
-  .screen {
-    padding-bottom: 82px;
-  }
-
-  .coord-vals {
-    flex-direction: column;
-  }
-
-  .method-tabs {
-    overflow-x: auto;
-  }
-
-  .method-tab {
-    min-width: 120px;
-    flex: unset;
-  }
-
-  .card-actions {
-    flex-direction: column;
-  }
-
-  .status-select {
-    width: 100%;
-    min-height: 42px;
-  }
-
-  .gallery-grid {
-    grid-template-columns: 1fr;
-    padding: 10px;
-    gap: 10px;
-  }
-}
-
-@media (max-width: 360px) {
-  .top-bar {
-    padding: 12px;
-  }
-
-  .stats-row {
-    gap: 8px;
-    padding: 10px;
-  }
-
-  .gallery-card {
-    padding: 12px;
-  }
-
-  .card-name {
-    font-size: 14px;
-  }
-
-  .btn-sm {
-    font-size: 11px;
-  }
-}
-
 
 html, body {
   min-height: 100%;
   background: #f4f1e8;
 }
-
 body {
   display: flex;
   justify-content: center;
 }
-
 .app {
   min-height: 100dvh;
-  background:
-    linear-gradient(to bottom, #f7f5ef 0%, #f4f1e8 100%);
+  background: linear-gradient(to bottom, #f7f5ef 0%, #f4f1e8 100%);
 }
-
 .screen {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
-
 #screen-map {
   min-height: calc(100dvh - 150px);
 }
-
 #map {
   border-radius: 18px;
   overflow: hidden;
   margin: 12px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
-
 .map-legend {
   margin: 0 12px 12px;
   border-radius: 14px;
@@ -364,7 +241,6 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(0,0,0,0.05);
 }
-
 .stats-row {
   position: sticky;
   top: 60px;
@@ -372,133 +248,167 @@ body {
   background: rgba(255,255,255,0.94);
   backdrop-filter: blur(10px);
 }
-
 .stat {
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,0.95),
-    rgba(255,255,255,0.75)
-  );
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.75));
   border: 1px solid rgba(0,0,0,0.04);
 }
-
-.gallery-card,
-.form-card {
+.gallery-card, .form-card {
   background: rgba(255,255,255,0.82);
   backdrop-filter: blur(10px);
 }
-
 .archived-note {
   margin: 10px 12px 0;
   border-radius: 12px;
 }
-
 .list-toolbar {
   margin: 0 0 6px;
 }
 
+/* Base Desktop adjustments */
 @media (min-width: 1024px) {
-  .app {
-    max-width: 1400px;
-  }
-
-  #screen-map {
-    padding: 14px;
-  }
-
-  #map {
-    margin: 0;
-    height: calc(100dvh - 240px);
-  }
-
-  .map-legend {
-    margin: 12px 0 0;
-  }
-
-  .gallery-grid {
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  }
+  .app { max-width: 1400px; }
+  #screen-map { padding: 14px; }
+  #map { margin: 0; height: calc(100dvh - 240px); }
+  .map-legend { margin: 12px 0 0; }
+  .gallery-grid { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+}
+@media (min-width: 700px) {
+  .stats-row { grid-template-columns: repeat(4, 1fr); }
 }
 
+/* =======================================================
+   PERBAIKAN LAYOUT KHUSUS MOBILE & RESPONSIVE (DIPERBAIKI)
+   ======================================================= */
 @media (max-width: 768px) {
-  body {
-    background: #f7f5ef;
+  html, body {
+    height: 100%;
+    overflow: hidden; /* Mengunci scroll utama body agar tidak double scroll */
+  }
+
+  .app {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
   }
 
   .top-bar {
     border-radius: 0 0 18px 18px;
+    padding: 12px 14px 10px;
+    flex-shrink: 0;
   }
+  .top-bar h1 { font-size: 18px; } /* Ukuran judul lebih proporsional */
+  .top-bar p { font-size: 12px; }
 
   .stats-row {
-    top: 72px;
+    position: static; /* Lepas dari sticky agar kalkulasi layar vertikal bersih */
+    gap: 8px;
+    padding: 10px 12px;
+    flex-shrink: 0;
+  }
+  .stat { padding: 10px; }
+  .stat-label { font-size: 12px; }
+  .stat-value { font-size: 18px; font-weight: 600; }
+
+  .tab-bar {
+    display: none; /* Menggunakan bottom-nav di mobile */
   }
 
-  #screen-map {
-    min-height: auto;
-  }
-
-  #map {
-    margin: 10px;
-}
-
-  .map-legend {
-    margin: 0 10px 10px;
-  }
-
-  .gallery-grid {
-    padding-bottom: 90px;
-  }
-
-  .add-screen {
-    padding-bottom: 100px;
-  }
-}
-
-
-@media (max-width: 768px) {
-  html,
-  body {
-    height: auto;
-    min-height: 100%;
-    overflow-x: hidden;
-  }
-
-  .app {
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-  }
-
+  /* Kontainer Utama Layar */
   .screen {
-    flex: 1;
-    min-height: auto;
+    height: 100%;
+    overflow-y: auto; /* Memungkinkan scrolling mandiri di dalam tab selain Map */
+    padding-bottom: 84px; /* Memberi ruang aman di atas bottom-nav */
   }
 
+  /* LAYOUT KHUSUS TAB MAP: Vertikal Penuh, No Space Kosong */
   #screen-map {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    min-height: calc(100dvh - 140px);
+    height: 100%; 
+    padding-bottom: 76px; /* Pas dengan tinggi bottom-nav + gap kecil */
+    overflow: hidden; /* Mencegah seluruh layar ikut ter-scroll */
   }
 
   #map {
-    flex: 1;
-    height: calc(100dvh - 260px) !important;
-    min-height: 420px;
+    flex: 1; /* Memaksa map mengambil sisa seluruh ruang vertikal yang tersedia */
+    height: auto !important; 
+    min-height: 0; /* Override min-height bawaan agar flexbox bekerja sempurna */
     max-height: none;
+    margin: 10px 12px;
   }
 
   .map-legend {
     flex-shrink: 0;
+    margin: 0 12px 4px;
+    padding: 10px;
+    gap: 8px;
+  }
+  .legend-item { font-size: 12px; } /* Pembesaran font legend */
+
+  /* LAYOUT TAB GALLERIES & ADD */
+  .gallery-grid {
+    grid-template-columns: 1fr;
+    padding: 12px 14px;
+    gap: 12px;
+  }
+  
+  .gallery-card { padding: 16px; }
+  .card-name { font-size: 16px; font-weight: 600; } /* Font Nama Galeri lebih besar */
+  .card-address { font-size: 13px; line-height: 1.4; color: #444; } /* Font Alamat lebih besar & kontras */
+  .coords { font-size: 11px; }
+  .badge { font-size: 11px; padding: 4px 10px; }
+  .exh-block { font-size: 12px; padding: 8px 10px; }
+
+  .card-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .btn-sm {
+    font-size: 13px; /* Tombol aksi lebih ramah sentuhan jari */
+    min-height: 44px;
+    width: 100%;
+  }
+  .status-select {
+    width: 100%;
+    min-height: 44px;
+    font-size: 13px;
   }
 
+  /* Form Add Gallery */
+  .add-screen { padding: 12px 14px; }
+  .form-card { border-radius: 18px; padding: 16px; }
+  .form-card h2 { font-size: 15px; }
+  label { font-size: 12px; font-weight: 500; }
+  input, select, textarea {
+    min-height: 46px;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px; /* Memperbesar font input agar iOS tidak auto-zoom mengganggu */
+  }
+  textarea { min-height: 90px; }
+  .coord-vals { flex-direction: column; gap: 8px; }
+  .method-tabs { overflow-x: auto; scrollbar-width: none; }
+  .method-tab { min-width: 110px; flex: unset; font-size: 13px; }
+
   .bottom-nav {
+    display: flex;
     position: fixed;
     left: 0;
     right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
   }
+  .nav-btn { font-size: 12px; } /* Label menu bawah lebih besar */
 }
 
+@media (max-width: 380px) {
+  .top-bar h1 { font-size: 16px; }
+  .stat-value { font-size: 16px; }
+  .card-name { font-size: 15px; }
+  .card-address { font-size: 12px; }
+}
 </style>
 
 <h2 class="sr-only">Jakarta Art Gallery Archive — connected to Supabase. Shared gallery data, private visited status.</h2>
