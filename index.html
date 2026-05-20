@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jakarta Art Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+<meta http-equiv="refresh" content="2.5;url=gallery.html">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #fffbed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 24px;
+    font-family: 'Luckiest Guy', system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .splash {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(12px, 3vh, 28px);
+    animation: fadeUp 900ms ease-out both;
+  }
+  .title {
+    font-family: 'Luckiest Guy', cursive;
+    color: #1e4f9c;
+    letter-spacing: 0.04em;
+    font-size: clamp(40px, 9vw, 96px);
+    line-height: 1.05;
+    text-shadow: 0 2px 0 rgba(30,79,156,0.08);
+  }
+  .by {
+    font-family: 'Luckiest Guy', cursive;
+    color: #1e4f9c;
+    opacity: 0.75;
+    font-size: clamp(18px, 3vw, 28px);
+    letter-spacing: 0.08em;
+  }
+  .logo {
+    width: clamp(120px, 22vw, 220px);
+    height: auto;
+    display: block;
+    animation: float 3.5s ease-in-out infinite;
+  }
+  .skip {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    color: #1e4f9c;
+    opacity: 0.6;
+    text-decoration: none;
+  }
+  .skip:hover { opacity: 1; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-6px); }
+  }
+</style>
+</head>
+<body>
+  <div class="splash">
+    <h1 class="title">Jakarta Art Map</h1>
+    <div class="by">by</div>
+    <img class="logo" src="jalur-medina-logo.png" alt="Jalur Medina" />
+  </div>
+  <a class="skip" href="gallery.html">Enter →</a>
+  <script>setTimeout(function(){ location.href='gallery.html'; }, 2500);</script>
+</body>
+</html>

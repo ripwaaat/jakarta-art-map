@@ -1,0 +1,41 @@
+/* Design tokens + base polish for Jakarta Art Map */
+:root {
+  /* Backgrounds (warm, paper-like to match splash #fffbed) */
+  --color-background-primary:   #ffffff;
+  --color-background-secondary: #f6f3ea;
+  --color-background-tertiary:  #fffbed;
+  --color-background-info:      #e8f1fb;
+
+  /* Text */
+  --color-text-primary:   #1a1a1a;
+  --color-text-secondary: #5b6470;
+  --color-text-tertiary:  #98a0ac;
+  --color-text-info:      #1e4f9c;
+
+  /* Borders */
+  --color-border-primary:   #1e4f9c;
+  --color-border-secondary: #d8dde4;
+  --color-border-tertiary:  #ececec;
+
+  /* Radius */
+  --border-radius-sm: 6px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 14px;
+
+  /* Fonts */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+/* Base polish */
+html, body { background: var(--color-background-tertiary); color: var(--color-text-primary); }
+button { font-family: inherit; }
+button:active { transform: translateY(0.5px); }
+input, select, textarea { font-family: inherit; transition: border-color .15s, box-shadow .15s; }
+input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px rgba(30,79,156,0.12); }
+
+/* Nicer card shadow */
+.form-card, .gallery-card { box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 2px 8px rgba(15,23,42,0.04); }
+
+/* Smooth scroll for in-app nav */
+html { scroll-behavior: smooth; }

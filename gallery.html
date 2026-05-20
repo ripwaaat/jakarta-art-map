@@ -1,0 +1,507 @@
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<link rel="stylesheet" href="theme.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: var(--font-sans); background: var(--color-background-tertiary); }
+.app { display: flex; flex-direction: column; min-height: 600px; max-width: 960px; margin: 0 auto; background: var(--color-background-tertiary); }
+.top-bar { background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); padding: 14px 20px 10px; }
+.top-bar h1 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.top-bar p { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px 20px; background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); }
+.stat { background: var(--color-background-secondary); border-radius: 8px; padding: 10px 12px; }
+.stat-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 3px; }
+.stat-value { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+.tab-bar { display: flex; background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); padding: 0 20px; }
+.tab { padding: 10px 18px; font-size: 13px; cursor: pointer; color: var(--color-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; transition: all 0.15s; white-space: nowrap; }
+.tab.active { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); font-weight: 500; }
+.screen { flex: 1; overflow-y: auto; }
+#map { width: 100%; height: 460px; }
+@media (max-width: 600px) { #map { height: 340px; } }
+.map-legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 16px; background: var(--color-background-primary); border-top: 0.5px solid var(--color-border-tertiary); }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+.legend-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+.list-toolbar { display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px; background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); scrollbar-width: none; align-items: center; }
+.list-toolbar::-webkit-scrollbar { display: none; }
+.filter-btn { white-space: nowrap; flex-shrink: 0; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: 20px; padding: 5px 13px; font-size: 12px; cursor: pointer; color: var(--color-text-secondary); transition: all 0.15s; }
+.filter-btn.active { background: var(--color-background-info); color: var(--color-text-info); border-color: transparent; font-weight: 500; }
+.gallery-grid { padding: 12px 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+@media (max-width: 600px) { .gallery-grid { grid-template-columns: 1fr; padding: 8px 10px; gap: 8px; } }
+.gallery-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 13px 14px; }
+.gallery-card.visited { border-left: 3px solid #1D9E75; }
+.gallery-card.closed-temp { opacity: 0.78; border-left: 3px solid #BA7517; }
+.gallery-card.closed-perm { opacity: 0.6; border-left: 3px solid #A32D2D; }
+.card-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.card-address { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.coords { font-size: 10px; color: var(--color-text-tertiary); font-family: var(--font-mono); margin-top: 2px; }
+.badge-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; align-items: center; }
+.badge { font-size: 10px; padding: 3px 9px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+.size-S { background:#EAF3DE; color:#3B6D11; }
+.size-M { background:#FAEEDA; color:#854F0B; }
+.size-L { background:#FAECE7; color:#993C1D; }
+.status-active { background:#E1F5EE; color:#0F6E56; }
+.status-temp { background:#FAEEDA; color:#854F0B; }
+.status-perm { background:#FCEBEB; color:#A32D2D; }
+.visited-b { background:#E6F1FB; color:#185FA5; }
+.exh-block { margin-top:7px; background:var(--color-background-secondary); border-radius:6px; padding:6px 9px; font-size:11px; color:var(--color-text-secondary); }
+.insta-embed { margin-top:7px; border:0.5px solid var(--color-border-tertiary); border-radius:8px; overflow:hidden; }
+.insta-hdr { display:flex; align-items:center; gap:7px; padding:6px 9px; background:var(--color-background-secondary); border-bottom:0.5px solid var(--color-border-tertiary); }
+.insta-av { width:22px; height:22px; border-radius:50%; background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); display:flex; align-items:center; justify-content:center; font-size:10px; color:white; font-weight:500; }
+.insta-name { font-size:11px; font-weight:500; color:var(--color-text-primary); }
+.insta-open { font-size:11px; color:var(--color-text-info); text-decoration:none; margin-left:auto; }
+.insta-prev { padding:5px 9px; font-size:11px; color:var(--color-text-secondary); font-style:italic; }
+.card-actions { display:flex; gap:6px; margin-top:9px; flex-wrap:wrap; border-top:0.5px solid var(--color-border-tertiary); padding-top:9px; }
+.btn-sm { background:transparent; border:0.5px solid var(--color-border-secondary); border-radius:8px; padding:5px 10px; font-size:11px; cursor:pointer; color:var(--color-text-secondary); display:flex; align-items:center; gap:4px; text-decoration:none; transition:all 0.15s; min-height:30px; }
+.btn-sm:hover, .btn-sm:active { background:var(--color-background-secondary); }
+.btn-visit.is-visited { color:#0F6E56; border-color:#5DCAA5; }
+.status-select { font-size:11px; border:0.5px solid var(--color-border-secondary); border-radius:8px; padding:4px 6px; background:var(--color-background-primary); color:var(--color-text-secondary); cursor:pointer; min-height:30px; }
+.add-screen { padding: 16px 20px; max-width: 640px; }
+@media (max-width: 600px) { .add-screen { padding: 12px; } }
+.form-card { background:var(--color-background-primary); border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); padding:16px; margin-bottom:12px; }
+.form-card h2 { font-size:14px; font-weight:500; color:var(--color-text-primary); margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+@media (max-width: 400px) { .form-row { grid-template-columns:1fr; } }
+.form-group { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+.form-group:last-child { margin-bottom:0; }
+label { font-size:11px; color:var(--color-text-secondary); }
+input, select, textarea { width:100%; font-size:13px; }
+textarea { height:56px; resize:none; }
+.btn-save { width:100%; padding:12px; background:transparent; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); font-size:14px; cursor:pointer; color:var(--color-text-primary); font-weight:500; display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px; }
+.btn-save:hover, .btn-save:active { background:var(--color-background-secondary); }
+.btn-save:disabled { opacity:0.5; cursor:not-allowed; }
+.hint { font-size:11px; color:var(--color-text-tertiary); margin-top:8px; }
+.bottom-nav { display:none; position:sticky; bottom:0; width:100%; height:58px; background:var(--color-background-primary); border-top:0.5px solid var(--color-border-tertiary); flex-shrink:0; }
+.nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; background:none; border:none; cursor:pointer; color:var(--color-text-secondary); font-size:10px; transition:color 0.15s; padding:6px 0; }
+.nav-btn i { font-size:22px; }
+.nav-btn.active { color:var(--color-text-primary); }
+.archived-note { font-size:11px; color:var(--color-text-tertiary); padding:7px 16px; background:var(--color-background-secondary); border-bottom:0.5px solid var(--color-border-tertiary); display:flex; align-items:center; gap:6px; }
+.toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--color-background-primary); border:0.5px solid var(--color-border-secondary); border-radius:20px; padding:8px 18px; font-size:12px; color:var(--color-text-primary); opacity:0; transition:all 0.3s; pointer-events:none; z-index:9999; white-space:nowrap; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.loading-overlay { display:flex; align-items:center; justify-content:center; padding:3rem; color:var(--color-text-secondary); font-size:13px; gap:10px; flex-direction:column; }
+.spinner { width:24px; height:24px; border:2px solid var(--color-border-tertiary); border-top-color:var(--color-text-secondary); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.sync-dot { width:7px; height:7px; border-radius:50%; background:#1D9E75; display:inline-block; margin-left:6px; vertical-align:middle; }
+.sync-dot.syncing { background:#BA7517; animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.error-msg { background:#FCEBEB; color:#A32D2D; border-radius:var(--border-radius-md); padding:8px 12px; font-size:12px; margin-bottom:10px; display:none; }
+@media (max-width: 600px) {
+  .tab-bar { display:none; }
+  .bottom-nav { display:flex; }
+  .screen { padding-bottom: 58px; }
+  .stats-row { padding:10px 12px; gap:6px; }
+  .stat { padding:8px 6px; }
+  .stat-value { font-size:17px; }
+}
+</style>
+
+<h2 class="sr-only">Jakarta Art Gallery Archive — connected to Supabase. Shared gallery data, private visited status.</h2>
+
+<div class="app">
+  <div class="top-bar">
+    <h1><i class="ti ti-building" aria-hidden="true" style="font-size:16px;margin-right:6px;vertical-align:-2px;"></i>Jakarta Art Gallery Archive <span class="sync-dot" id="sync-dot" title="Connected to Supabase"></span></h1>
+    <p>A living record of art spaces in Jakarta — past and present</p>
+  </div>
+
+  <div class="stats-row" id="stats">
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-value">—</div></div>
+    <div class="stat"><div class="stat-label">Active</div><div class="stat-value">—</div></div>
+    <div class="stat"><div class="stat-label">Visited</div><div class="stat-value">—</div></div>
+    <div class="stat"><div class="stat-label">Archived</div><div class="stat-value">—</div></div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchScreen('map',this)"><i class="ti ti-map" aria-hidden="true" style="font-size:13px;margin-right:5px;"></i>Map</button>
+    <button class="tab" onclick="switchScreen('list',this)"><i class="ti ti-layout-list" aria-hidden="true" style="font-size:13px;margin-right:5px;"></i>Galleries</button>
+    <button class="tab" onclick="switchScreen('add',this)"><i class="ti ti-circle-plus" aria-hidden="true" style="font-size:13px;margin-right:5px;"></i>Add gallery</button>
+  </div>
+
+  <div class="screen" id="screen-map">
+    <div id="map"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#EAF3DE;">🌿</div>Small &lt;200 sqm</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FAEEDA;">🎨</div>Medium 200–1000 sqm</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FAECE7;">🏛️</div>Large &gt;1000 sqm</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#E1F5EE;">✓</div>Visited (local)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FCEBEB;">✕</div>Closed</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-list" style="display:none;">
+    <div class="list-toolbar">
+      <span style="font-size:11px;color:var(--color-text-secondary);flex-shrink:0;">Filter:</span>
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('active',this)">Active</button>
+      <button class="filter-btn" onclick="setFilter('closed',this)">Closed / Archived</button>
+      <button class="filter-btn" onclick="setFilter('S',this)">🌿 Small</button>
+      <button class="filter-btn" onclick="setFilter('M',this)">🎨 Medium</button>
+      <button class="filter-btn" onclick="setFilter('L',this)">🏛️ Large</button>
+      <button class="filter-btn" onclick="setFilter('visited',this)">✓ Visited</button>
+      <button class="filter-btn" onclick="setFilter('unvisited',this)">Not visited</button>
+    </div>
+    <div class="archived-note"><i class="ti ti-archive" aria-hidden="true" style="font-size:11px;"></i>Closed galleries are kept as archive records. Gallery list and status are shared across all users.</div>
+    <div class="gallery-grid" id="gallery-list"></div>
+  </div>
+
+  <div class="screen" id="screen-add" style="display:none;">
+    <div class="add-screen">
+      <div class="error-msg" id="form-error"></div>
+      <div class="form-card">
+        <h2><i class="ti ti-building" aria-hidden="true" style="font-size:14px;"></i>Gallery details</h2>
+        <div class="form-group"><label>Gallery name *</label><input type="text" id="new-name" placeholder="e.g. Galeri Nasional Indonesia"></div>
+        <div class="form-group"><label>Address *</label><input type="text" id="new-address" placeholder="e.g. Jl. Medan Merdeka Timur No.14, Gambir"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Latitude *</label><input type="number" id="new-lat" placeholder="-6.1865" step="0.0001"></div>
+          <div class="form-group"><label>Longitude *</label><input type="number" id="new-lng" placeholder="106.8226" step="0.0001"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Size category</label>
+            <select id="new-size">
+              <option value="S">🌿 Small — under 200 sqm</option>
+              <option value="M" selected>🎨 Medium — 200–1000 sqm</option>
+              <option value="L">🏛️ Large — over 1000 sqm</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Operating status</label>
+            <select id="new-status">
+              <option value="active">Active</option>
+              <option value="temp">Temporarily closed</option>
+              <option value="perm">Permanently closed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Instagram handle (optional)</label><input type="text" id="new-insta" placeholder="@galeri_name"></div>
+      </div>
+      <div class="form-card">
+        <h2><i class="ti ti-calendar-event" aria-hidden="true" style="font-size:14px;"></i>Exhibition info <span style="font-weight:400;color:var(--color-text-secondary);font-size:12px;">(optional)</span></h2>
+        <div class="form-group"><label>Exhibition note</label><textarea id="new-exhibition" placeholder="e.g. 'Resonance' by Eko Nugroho — until 30 June 2026"></textarea></div>
+        <div class="form-group"><label>Instagram post URL</label><input type="text" id="new-insta-post" placeholder="https://www.instagram.com/p/ABC123/"></div>
+      </div>
+      <button class="btn-save" id="save-btn" onclick="addGallery()"><i class="ti ti-plus" aria-hidden="true"></i>Save to archive</button>
+      <p class="hint"><i class="ti ti-map-pin" aria-hidden="true" style="font-size:11px;margin-right:3px;"></i>Tip: right-click any spot in Google Maps to copy its coordinates.</p>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-map" onclick="switchScreen('map',this)"><i class="ti ti-map" aria-hidden="true"></i>Map</button>
+    <button class="nav-btn" id="nav-list" onclick="switchScreen('list',this)"><i class="ti ti-layout-list" aria-hidden="true"></i>Galleries</button>
+    <button class="nav-btn" id="nav-add" onclick="switchScreen('add',this)"><i class="ti ti-circle-plus" aria-hidden="true"></i>Add</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://utejrmtwykywcuzcutiw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0ZWpybXR3eWt5d2N1emN1dGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNDIzMjgsImV4cCI6MjA5NDgxODMyOH0.9Qk9Iy-4xwvOtSHCfHkLbv5ra2xZDtCTO1NCqTQWGQs';
+const VISITED_KEY = 'jkt_gallery_visited_v1';
+
+const sizeConfig = {
+  S:{ emoji:'🌿', bg:'#3B6D11', border:'#27500A', label:'Small' },
+  M:{ emoji:'🎨', bg:'#854F0B', border:'#633806', label:'Medium' },
+  L:{ emoji:'🏛️', bg:'#993C1D', border:'#712B13', label:'Large' },
+};
+const statusConfig = {
+  active:{ label:'Active', cls:'status-active' },
+  temp:{ label:'Temp. closed', cls:'status-temp' },
+  perm:{ label:'Permanently closed', cls:'status-perm' },
+};
+
+let galleries = [];
+let visitedIds = new Set();
+let currentFilter = 'all';
+let map = null;
+let markers = [];
+
+async function sbFetch(path, opts={}) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+    ...opts,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation',
+      ...opts.headers
+    }
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const txt = await res.text();
+  return txt ? JSON.parse(txt) : null;
+}
+
+async function loadGalleries() {
+  setSyncing(true);
+  try {
+    const data = await sbFetch('galleries?select=*&order=created_at.asc');
+    galleries = data || [];
+    loadVisited();
+    render();
+  } catch(e) {
+    showList('<div class="loading-overlay" style="color:#A32D2D;"><i class="ti ti-wifi-off" style="font-size:28px;" aria-hidden="true"></i>Could not connect to database.<br><span style="font-size:11px;opacity:0.7;">'+e.message+'</span></div>');
+  } finally {
+    setSyncing(false);
+  }
+}
+
+function loadVisited() {
+  try {
+    const raw = localStorage.getItem(VISITED_KEY);
+    visitedIds = new Set(raw ? JSON.parse(raw) : []);
+  } catch(e) { visitedIds = new Set(); }
+}
+
+function saveVisited() {
+  try { localStorage.setItem(VISITED_KEY, JSON.stringify([...visitedIds])); } catch(e) {}
+}
+
+function setSyncing(on) {
+  const dot = document.getElementById('sync-dot');
+  dot.classList.toggle('syncing', on);
+  dot.title = on ? 'Syncing...' : 'Connected to Supabase';
+}
+
+function showToast(msg, ok=true) {
+  const t = document.getElementById('toast');
+  t.innerHTML = (ok ? '<i class="ti ti-check" aria-hidden="true" style="font-size:12px;margin-right:5px;color:#0F6E56;"></i>' : '<i class="ti ti-x" aria-hidden="true" style="font-size:12px;margin-right:5px;color:#A32D2D;"></i>') + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function isVisited(id) { return visitedIds.has(id); }
+
+function makeIcon(g) {
+  const cfg = sizeConfig[g.size] || sizeConfig.M;
+  const isClosed = g.status === 'perm' || g.status === 'temp';
+  const pinBg = isClosed ? '#888780' : cfg.bg;
+  const pinBorder = isClosed ? '#5F5E5A' : cfg.border;
+  const visited = isVisited(g.id);
+  const check = visited ? `<div style="position:absolute;top:-4px;right:-4px;width:14px;height:14px;background:#1D9E75;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:8px;color:white;line-height:1;">✓</div>` : '';
+  const closedX = isClosed ? `<div style="position:absolute;top:-4px;left:-4px;width:14px;height:14px;background:#A32D2D;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:8px;color:white;line-height:1;">✕</div>` : '';
+  const html = `<div style="position:relative;width:36px;height:36px;"><div style="width:36px;height:36px;background:${pinBg};border:2px solid ${pinBorder};border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.22);${isClosed?'opacity:0.6;':''}"><span style="transform:rotate(45deg);font-size:15px;line-height:1;">${isClosed?'🏚️':cfg.emoji}</span></div>${check}${closedX}</div>`;
+  return L.divIcon({ html, className:'', iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-38] });
+}
+
+function popupHtml(g) {
+  const cfg = sizeConfig[g.size] || sizeConfig.M;
+  const stCfg = statusConfig[g.status] || statusConfig.active;
+  const visited = isVisited(g.id);
+  const stColors = { active:'#0F6E56', temp:'#854F0B', perm:'#A32D2D' };
+  const stBg = { active:'#E1F5EE', temp:'#FAEEDA', perm:'#FCEBEB' };
+  const visitBtn = visited
+    ? `<span style="font-size:11px;background:#E1F5EE;color:#0F6E56;padding:2px 8px;border-radius:10px;font-weight:500;">✓ Visited</span>`
+    : `<button onclick="toggleVisited(${g.id})" style="font-size:11px;background:transparent;border:0.5px solid #5DCAA5;color:#0F6E56;padding:4px 10px;border-radius:10px;cursor:pointer;min-height:28px;">Mark visited</button>`;
+  const exh = g.exhibition ? `<div style="margin-top:6px;font-size:11px;background:#f5f5f0;border-radius:4px;padding:5px 7px;color:#555;">📅 ${g.exhibition}</div>` : '';
+  const insta = g.instagram ? `<a href="https://instagram.com/${g.instagram.replace('@','')}" target="_blank" style="font-size:11px;color:#185FA5;text-decoration:none;display:block;margin-top:5px;">📸 ${g.instagram}</a>` : '';
+  const post = g.insta_post ? `<a href="${g.insta_post}" target="_blank" style="font-size:11px;color:#185FA5;text-decoration:none;display:block;margin-top:3px;">🔗 View exhibition post</a>` : '';
+  return `<div style="font-family:sans-serif;min-width:175px;max-width:220px;"><div style="font-weight:600;font-size:13px;margin-bottom:3px;color:#111;">${g.name}</div><div style="font-size:11px;color:#666;margin-bottom:6px;">${g.address}</div><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:5px;"><span style="font-size:11px;background:${cfg.bg};color:white;padding:2px 8px;border-radius:10px;font-weight:500;">${cfg.emoji} ${cfg.label}</span><span style="font-size:11px;background:${stBg[g.status]||'#E1F5EE'};color:${stColors[g.status]||'#0F6E56'};padding:2px 8px;border-radius:10px;font-weight:500;">${stCfg.label}</span></div><div style="margin-bottom:5px;">${visitBtn}</div>${exh}${insta}${post}</div>`;
+}
+
+function initMap() {
+  if (map) return;
+  map = L.map('map', { zoomControl:true }).setView([-6.2088, 106.8456], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap contributors', maxZoom:18
+  }).addTo(map);
+  renderMarkers();
+}
+
+function renderMarkers() {
+  markers.forEach(m => m.remove());
+  markers = [];
+  galleries.forEach(g => {
+    const m = L.marker([g.lat, g.lng], { icon:makeIcon(g) })
+      .addTo(map).bindPopup(popupHtml(g), { maxWidth:240 });
+    markers.push(m);
+  });
+}
+
+function renderStats() {
+  const active = galleries.filter(g=>g.status==='active').length;
+  const closed = galleries.filter(g=>g.status!=='active').length;
+  const visited = galleries.filter(g=>isVisited(g.id)).length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-value">${galleries.length}</div></div>
+    <div class="stat"><div class="stat-label">Active</div><div class="stat-value">${active}</div></div>
+    <div class="stat"><div class="stat-label">Visited</div><div class="stat-value">${visited}</div></div>
+    <div class="stat"><div class="stat-label">Archived</div><div class="stat-value">${closed}</div></div>
+  `;
+}
+
+function getFiltered() {
+  switch(currentFilter) {
+    case 'active': return galleries.filter(g=>g.status==='active');
+    case 'closed': return galleries.filter(g=>g.status!=='active');
+    case 'visited': return galleries.filter(g=>isVisited(g.id));
+    case 'unvisited': return galleries.filter(g=>!isVisited(g.id));
+    case 'S': case 'M': case 'L': return galleries.filter(g=>g.size===currentFilter);
+    default: return galleries;
+  }
+}
+
+function instaHandle(raw) { return raw ? raw.replace('@','') : ''; }
+
+function instaPostCard(g) {
+  if (!g.insta_post) return '';
+  const handle = instaHandle(g.instagram);
+  const initial = handle ? handle[0].toUpperCase() : 'I';
+  return `<div class="insta-embed"><div class="insta-hdr"><div class="insta-av">${initial}</div><span class="insta-name">${g.instagram||'Instagram'}</span><a href="${g.insta_post}" class="insta-open" target="_blank"><i class="ti ti-external-link" aria-hidden="true" style="font-size:11px;margin-right:2px;vertical-align:-1px;"></i>Open post</a></div><div class="insta-prev"><i class="ti ti-brand-instagram" aria-hidden="true" style="font-size:11px;margin-right:3px;"></i>Exhibition post linked</div></div>`;
+}
+
+function showList(html) {
+  document.getElementById('gallery-list').innerHTML = html;
+}
+
+function renderList() {
+  const filtered = getFiltered();
+  if (!filtered.length) {
+    showList('<div class="loading-overlay"><i class="ti ti-mood-empty" style="font-size:32px;" aria-hidden="true"></i>No galleries match this filter.</div>');
+    return;
+  }
+  showList(filtered.map(g => {
+    const stCfg = statusConfig[g.status] || statusConfig.active;
+    const visited = isVisited(g.id);
+    const cardCls = g.status==='perm' ? 'closed-perm' : g.status==='temp' ? 'closed-temp' : visited ? 'visited' : '';
+    return `<div class="gallery-card ${cardCls}" id="card-${g.id}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div class="card-name">${(sizeConfig[g.size]||sizeConfig.M).emoji} ${g.name}</div>
+          <div class="card-address">${g.address}</div>
+          <div class="coords">${g.lat.toFixed(4)}, ${g.lng.toFixed(4)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+          <span class="badge size-${g.size}">${(sizeConfig[g.size]||sizeConfig.M).label}</span>
+          <span class="badge ${stCfg.cls}">${stCfg.label}</span>
+          ${visited?'<span class="badge visited-b">✓ Visited</span>':''}
+        </div>
+      </div>
+      ${g.exhibition?`<div class="exh-block">📅 ${g.exhibition}</div>`:''}
+      ${instaPostCard(g)}
+      <div class="card-actions">
+        <button class="btn-sm btn-visit ${visited?'is-visited':''}" onclick="toggleVisited(${g.id})"><i class="ti ${visited?'ti-check':'ti-circle'}" aria-hidden="true" style="font-size:12px;"></i>${visited?'Visited':'Mark visited'}</button>
+        <button class="btn-sm" onclick="flyToGallery(${g.id})" style="color:var(--color-text-info);"><i class="ti ti-map-pin" aria-hidden="true" style="font-size:12px;"></i>Map</button>
+        ${g.instagram?`<a href="https://instagram.com/${instaHandle(g.instagram)}" class="btn-sm" target="_blank"><i class="ti ti-brand-instagram" aria-hidden="true" style="font-size:12px;"></i>${g.instagram}</a>`:''}
+        <select class="status-select" onchange="updateStatus(${g.id}, this.value)" title="Change operating status">
+          <option value="active" ${g.status==='active'?'selected':''}>Active</option>
+          <option value="temp" ${g.status==='temp'?'selected':''}>Temp. closed</option>
+          <option value="perm" ${g.status==='perm'?'selected':''}>Perm. closed</option>
+        </select>
+      </div>
+    </div>`;
+  }).join(''));
+}
+
+function render() { renderStats(); renderList(); if (map) renderMarkers(); }
+
+function toggleVisited(id) {
+  if (visitedIds.has(id)) visitedIds.delete(id);
+  else visitedIds.add(id);
+  saveVisited();
+  render();
+  showToast(visitedIds.has(id) ? 'Marked as visited' : 'Removed from visited');
+}
+
+async function updateStatus(id, newStatus) {
+  setSyncing(true);
+  try {
+    await sbFetch(`galleries?id=eq.${id}`, {
+      method: 'PATCH',
+      prefer: 'return=minimal',
+      body: JSON.stringify({ status: newStatus })
+    });
+    galleries = galleries.map(g => g.id===id ? {...g, status:newStatus} : g);
+    render();
+    showToast('Status updated for all users');
+  } catch(e) {
+    showToast('Failed to update status', false);
+  } finally {
+    setSyncing(false);
+  }
+}
+
+function flyToGallery(id) {
+  const g = galleries.find(g=>g.id===id);
+  if (!g) return;
+  const mapTab = document.querySelector('.tab') || document.getElementById('nav-map');
+  switchScreen('map', mapTab);
+  setTimeout(() => {
+    map.flyTo([g.lat, g.lng], 16, { duration:1.2 });
+    const idx = galleries.findIndex(x=>x.id===id);
+    if (markers[idx]) markers[idx].openPopup();
+  }, 150);
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+function switchScreen(screen, btn) {
+  ['map','list','add'].forEach(s => {
+    document.getElementById('screen-'+s).style.display = s===screen?'':'none';
+  });
+  document.querySelectorAll('.tab, .nav-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (screen==='map') setTimeout(()=>{ initMap(); map.invalidateSize(); }, 80);
+}
+
+async function addGallery() {
+  const name = document.getElementById('new-name').value.trim();
+  const address = document.getElementById('new-address').value.trim();
+  const lat = parseFloat(document.getElementById('new-lat').value);
+  const lng = parseFloat(document.getElementById('new-lng').value);
+  const size = document.getElementById('new-size').value;
+  const status = document.getElementById('new-status').value;
+  const instagram = document.getElementById('new-insta').value.trim();
+  const exhibition = document.getElementById('new-exhibition').value.trim();
+  const insta_post = document.getElementById('new-insta-post').value.trim();
+
+  const errEl = document.getElementById('form-error');
+  errEl.style.display = 'none';
+
+  if (!name || !address || isNaN(lat) || isNaN(lng)) {
+    errEl.textContent = 'Please fill in name, address, latitude, and longitude.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true" style="font-size:14px;animation:spin 0.8s linear infinite;"></i> Saving...';
+  setSyncing(true);
+
+  try {
+    const result = await sbFetch('galleries', {
+      method: 'POST',
+      body: JSON.stringify({ name, address, lat, lng, size, status, instagram: instagram||null, exhibition: exhibition||null, insta_post: insta_post||null })
+    });
+    if (result && result[0]) galleries.push(result[0]);
+    ['new-name','new-address','new-lat','new-lng','new-insta','new-exhibition','new-insta-post'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('new-size').value='M';
+    document.getElementById('new-status').value='active';
+    switchScreen('map', document.querySelector('.tab') || document.getElementById('nav-map'));
+    render();
+    showToast('Gallery saved — visible to all users');
+  } catch(e) {
+    errEl.textContent = 'Could not save: ' + e.message;
+    errEl.style.display = 'block';
+    showToast('Failed to save gallery', false);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-plus" aria-hidden="true"></i>Save to archive';
+    setSyncing(false);
+  }
+}
+
+document.getElementById('gallery-list').innerHTML = '<div class="loading-overlay"><div class="spinner"></div>Loading galleries from database...</div>';
+setTimeout(initMap, 300);
+loadGalleries();
+</script>
