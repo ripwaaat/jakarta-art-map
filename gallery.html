@@ -1,4 +1,3 @@
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -69,7 +68,8 @@ body { font-family: var(--font-sans); background: var(--color-background-tertiar
   min-height: 320px;
   max-height: 620px;
 }
-
+/* Mobile overrides the above fully via JS + inline style set before Leaflet init */
+ 
 .map-legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 16px; background: var(--color-background-primary); border-top: 0.5px solid var(--color-border-tertiary); }
 .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
 .legend-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
@@ -180,7 +180,7 @@ textarea { height:56px; resize:none; }
 .sync-dot.syncing { background:#BA7517; animation: pulse 1s ease-in-out infinite; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 .error-msg { background:#FCEBEB; color:#A32D2D; border-radius:var(--border-radius-md); padding:8px 12px; font-size:12px; margin-bottom:10px; display:none; }
-
+ 
 /* Location picker */
 .method-tabs { display:flex; gap:6px; margin-bottom:14px; }
 .method-tab { flex:1; padding:8px 6px; font-size:12px; font-weight:500; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); background:transparent; cursor:pointer; color:var(--color-text-secondary); text-align:center; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:5px; }
@@ -206,7 +206,7 @@ textarea { height:56px; resize:none; }
 .coord-val label { font-size:10px; color:var(--color-text-tertiary); display:block; margin-bottom:3px; }
 .coord-input { font-size:12px; font-family:var(--font-mono); width:100%; background:var(--color-background-primary); border:0.5px solid var(--color-border-secondary); border-radius:6px; padding:5px 8px; color:var(--color-text-primary); }
 .coord-input.has-value { border-color:#5DCAA5; color:#0F6E56; font-weight:500; }
-
+ 
 html, body {
   min-height: 100%;
   background: #f4f1e8;
@@ -262,7 +262,7 @@ body {
 .list-toolbar {
   margin: 0 0 6px;
 }
-
+ 
 /* Base Desktop adjustments */
 @media (min-width: 1024px) {
   .app { max-width: 1400px; }
@@ -274,52 +274,30 @@ body {
 @media (min-width: 700px) {
   .stats-row { grid-template-columns: repeat(4, 1fr); }
 }
-
+ 
 /* ==========================================================
-   MOBILE LAYOUT — dvh-calc approach (avoids flex-stretch issues)
-   iPhone 12 Pro: 844px tall
-   Fixed chrome: top-bar ~70px + stats ~60px + bottom-nav ~64px = ~194px
-   Map+legend fill the remaining ~650px
+   MOBILE — All sizing done via JS before Leaflet init.
+   CSS here only handles layout structure + bigger UI.
    ========================================================== */
-
-/* CSS custom property so JS can update it on resize */
-:root { --mobile-chrome: 194px; }
-
 @media (max-width: 768px) {
   html, body { height: 100dvh; overflow: hidden; background: #f7f5ef; }
-
-  .app {
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  /* ── Chrome pieces — all flex-shrink:0 so they take fixed space ── */
-  .top-bar {
-    flex-shrink: 0;
-    border-radius: 0 0 18px 18px;
-    padding: 14px 16px 12px;
-  }
+ 
+  .app { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+ 
+  .top-bar    { flex-shrink: 0; border-radius: 0 0 18px 18px; padding: 14px 16px 12px; }
   .top-bar h1 { font-size: 18px; }
   .top-bar p  { font-size: 12px; margin-top: 3px; }
-
-  .stats-row {
-    flex-shrink: 0;
-    position: static !important;        /* kill sticky so it participates in flex */
-    padding: 10px 12px;
-    gap: 8px;
-  }
+ 
+  .stats-row  { flex-shrink: 0; position: static !important; padding: 10px 12px; gap: 8px; }
   .stat       { padding: 10px 12px; border-radius: 14px; }
   .stat-label { font-size: 12px; }
   .stat-value { font-size: 20px; font-weight: 600; }
-
+ 
   .tab-bar { display: none !important; }
-
+ 
   .bottom-nav {
     display: flex !important;
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
+    position: fixed; left: 0; right: 0; bottom: 0;
     height: 64px;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: rgba(255,255,255,0.97);
@@ -328,55 +306,23 @@ body {
   }
   .nav-btn   { font-size: 12px; font-weight: 500; }
   .nav-btn i { font-size: 24px; }
-
-  /* ── Generic scrollable screens ── */
-  .screen {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-  }
-
-  /* ── MAP SCREEN — explicit height, no flex magic needed ── */
-  #screen-map {
-    /* Don't scroll; let children size themselves */
-    overflow: hidden !important;
-    padding-bottom: 0 !important;
-    /* Explicitly size to remaining viewport minus fixed nav */
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex !important;
-    flex-direction: column;
-  }
-
-  /* Override the base #map fixed height with an explicit dvh-based value.
-     This wins over Leaflet's inline style because we apply it via JS too. */
-  #map {
-    /* fallback fixed height — good approximation for iPhone 12 Pro */
-    height: calc(100dvh - 260px) !important;
-    min-height: 300px !important;
-    max-height: none !important;
-    width: calc(100% - 24px) !important;
-    margin: 10px 12px 8px !important;
-    border-radius: 18px !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.09);
-    flex-shrink: 0;
-  }
-
-  .map-legend {
-    flex-shrink: 0;
-    margin: 0 12px calc(64px + env(safe-area-inset-bottom, 0px) + 8px) !important;
-    padding: 10px 12px;
-    gap: 8px 14px;
-    border-radius: 14px;
-  }
+ 
+  /* Scrollable screens (list, add) */
+  .screen { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+ 
+  /* Map screen — no scroll, children fill it */
+  #screen-map { overflow: hidden !important; padding-bottom: 0 !important; min-height: 0 !important; }
+ 
+  /* #map height set by JS — only visual styles here */
+  #map { width: calc(100% - 24px) !important; margin: 10px 12px 8px !important; border-radius: 18px !important; max-height: none !important; min-height: unset !important; box-shadow: 0 4px 16px rgba(0,0,0,0.09); }
+ 
+  .map-legend { flex-shrink: 0; margin: 0 12px calc(64px + env(safe-area-inset-bottom, 0px) + 8px) !important; padding: 10px 12px; gap: 8px 14px; border-radius: 14px; }
   .legend-item { font-size: 13px; gap: 7px; }
   .legend-dot  { width: 26px; height: 26px; font-size: 13px; }
-
-  /* ── Gallery list ── */
-  .list-toolbar { padding: 12px 14px; gap: 8px; }
-  .filter-btn   { font-size: 13px; padding: 7px 15px; }
-
+ 
+  /* Gallery list */
+  .list-toolbar  { padding: 12px 14px; gap: 8px; }
+  .filter-btn    { font-size: 13px; padding: 7px 15px; }
   .gallery-grid  { grid-template-columns: 1fr; padding: 12px 14px; gap: 14px; }
   .gallery-card  { padding: 18px; border-radius: 18px; }
   .card-name     { font-size: 17px !important; font-weight: 600; color: #111; }
@@ -385,32 +331,24 @@ body {
   .badge         { font-size: 12px; padding: 5px 12px; }
   .badge-row     { gap: 6px; margin-top: 9px; }
   .exh-block     { font-size: 13px; padding: 9px 12px; }
-
   .card-actions  { flex-direction: column; gap: 8px; margin-top: 14px; }
   .btn-sm        { font-size: 14px; min-height: 48px; width: 100%; border-radius: 12px; }
   .status-select { width: 100%; min-height: 48px; font-size: 14px; }
-
-  /* ── Add gallery form ── */
-  .add-screen   { padding: 14px; }
-  .form-card    { padding: 18px; border-radius: 18px; margin-bottom: 14px; }
-  .form-card h2 { font-size: 16px; margin-bottom: 14px; }
-  label         { font-size: 13px; font-weight: 500; }
-
-  input, select, textarea {
-    min-height: 48px;
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 16px;   /* prevents iOS Safari auto-zoom */
-  }
-  textarea { min-height: 96px; }
-
-  .coord-vals  { flex-direction: column; gap: 8px; }
-  .method-tabs { overflow-x: auto; white-space: nowrap; gap: 8px; }
-  .method-tab  { min-width: 110px; flex: unset; font-size: 13px; padding: 10px 8px; }
-  .btn-save    { font-size: 15px; min-height: 50px; }
+ 
+  /* Add form */
+  .add-screen    { padding: 14px; }
+  .form-card     { padding: 18px; border-radius: 18px; margin-bottom: 14px; }
+  .form-card h2  { font-size: 16px; margin-bottom: 14px; }
+  label          { font-size: 13px; font-weight: 500; }
+  input, select, textarea { min-height: 48px; border-radius: 12px; padding: 12px 14px; font-size: 16px; }
+  textarea       { min-height: 96px; }
+  .coord-vals    { flex-direction: column; gap: 8px; }
+  .method-tabs   { overflow-x: auto; white-space: nowrap; gap: 8px; }
+  .method-tab    { min-width: 110px; flex: unset; font-size: 13px; padding: 10px 8px; }
+  .btn-save      { font-size: 15px; min-height: 50px; }
   .archived-note { font-size: 12px; padding: 10px 14px; }
 }
-
+ 
 @media (max-width: 360px) {
   .top-bar h1   { font-size: 16px; }
   .stat-value   { font-size: 18px; }
@@ -418,28 +356,28 @@ body {
   .card-address { font-size: 13px !important; }
 }
 </style>
-
+ 
 <h2 class="sr-only">Jakarta Art Gallery Archive — connected to Supabase. Shared gallery data, private visited status.</h2>
-
+ 
 <div class="app">
   <div class="top-bar">
     <h1><i class="ti ti-building" aria-hidden="true" style="font-size:16px;margin-right:6px;vertical-align:-2px;"></i>Jakarta Art Gallery Archive <span class="sync-dot" id="sync-dot" title="Connected to Supabase"></span></h1>
     <p>A living record of art spaces in Jakarta — past and present</p>
   </div>
-
+ 
   <div class="stats-row" id="stats">
     <div class="stat"><div class="stat-label">Total</div><div class="stat-value">—</div></div>
     <div class="stat"><div class="stat-label">Active</div><div class="stat-value">—</div></div>
     <div class="stat"><div class="stat-label">Visited</div><div class="stat-value">—</div></div>
     <div class="stat"><div class="stat-label">Archived</div><div class="stat-value">—</div></div>
   </div>
-
+ 
   <div class="tab-bar">
     <button class="tab active" onclick="switchScreen('map',this)"><i class="ti ti-map" aria-hidden="true" style="font-size:13px;margin-right:5px;"></i>Map</button>
     <button class="tab" onclick="switchScreen('list',this)"><i class="ti ti-layout-list" aria-hidden="true" style="font-size:13px;margin-right:5px;"></i>Galleries</button>
     <button class="tab" onclick="switchScreen('add',this)"><i class="ti ti-circle-plus" aria-hidden="true" style="font-size:13px;margin-right:5px;"></i>Add gallery</button>
   </div>
-
+ 
   <div class="screen" id="screen-map" style="justify-content:flex-start;">
     <div id="map"></div>
     <div class="map-legend">
@@ -450,7 +388,7 @@ body {
       <div class="legend-item"><div class="legend-dot" style="background:#FCEBEB;">✕</div>Closed</div>
     </div>
   </div>
-
+ 
   <div class="screen" id="screen-list" style="display:none;">
     <div class="list-toolbar">
       <span style="font-size:11px;color:var(--color-text-secondary);flex-shrink:0;">Filter:</span>
@@ -466,7 +404,7 @@ body {
     <div class="archived-note"><i class="ti ti-archive" aria-hidden="true" style="font-size:11px;"></i>Closed galleries are kept as archive records. Gallery list and status are shared across all users.</div>
     <div class="gallery-grid" id="gallery-list"></div>
   </div>
-
+ 
   <div class="screen" id="screen-add" style="display:none;">
     <div class="add-screen">
       <div class="error-msg" id="form-error"></div>
@@ -543,22 +481,22 @@ body {
       <p class="hint" style="text-align:center;"><i class="ti ti-users" aria-hidden="true" style="font-size:11px;margin-right:3px;"></i>New galleries are immediately visible to all users.</p>
     </div>
   </div>
-
+ 
   <nav class="bottom-nav">
     <button class="nav-btn active" id="nav-map" onclick="switchScreen('map',this)"><i class="ti ti-map" aria-hidden="true"></i>Map</button>
     <button class="nav-btn" id="nav-list" onclick="switchScreen('list',this)"><i class="ti ti-layout-list" aria-hidden="true"></i>Galleries</button>
     <button class="nav-btn" id="nav-add" onclick="switchScreen('add',this)"><i class="ti ti-circle-plus" aria-hidden="true"></i>Add</button>
   </nav>
 </div>
-
+ 
 <div class="toast" id="toast"></div>
-
+ 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://utejrmtwykywcuzcutiw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0ZWpybXR3eWt5d2N1emN1dGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNDIzMjgsImV4cCI6MjA5NDgxODMyOH0.9Qk9Iy-4xwvOtSHCfHkLbv5ra2xZDtCTO1NCqTQWGQs';
 const VISITED_KEY = 'jkt_gallery_visited_v1';
-
+ 
 const sizeConfig = {
   S:{ emoji:'🌿', bg:'#3B6D11', border:'#27500A', label:'Small' },
   M:{ emoji:'🎨', bg:'#854F0B', border:'#633806', label:'Medium' },
@@ -569,13 +507,13 @@ const statusConfig = {
   temp:{ label:'Temp. closed', cls:'status-temp' },
   perm:{ label:'Permanently closed', cls:'status-perm' },
 };
-
+ 
 let galleries = [];
 let visitedIds = new Set();
 let currentFilter = 'all';
 let map = null;
 let markers = [];
-
+ 
 async function sbFetch(path, opts={}) {
   const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
     ...opts,
@@ -591,7 +529,7 @@ async function sbFetch(path, opts={}) {
   const txt = await res.text();
   return txt ? JSON.parse(txt) : null;
 }
-
+ 
 async function loadGalleries() {
   setSyncing(true);
   try {
@@ -605,33 +543,33 @@ async function loadGalleries() {
     setSyncing(false);
   }
 }
-
+ 
 function loadVisited() {
   try {
     const raw = localStorage.getItem(VISITED_KEY);
     visitedIds = new Set(raw ? JSON.parse(raw) : []);
   } catch(e) { visitedIds = new Set(); }
 }
-
+ 
 function saveVisited() {
   try { localStorage.setItem(VISITED_KEY, JSON.stringify([...visitedIds])); } catch(e) {}
 }
-
+ 
 function setSyncing(on) {
   const dot = document.getElementById('sync-dot');
   dot.classList.toggle('syncing', on);
   dot.title = on ? 'Syncing...' : 'Connected to Supabase';
 }
-
+ 
 function showToast(msg, ok=true) {
   const t = document.getElementById('toast');
   t.innerHTML = (ok ? '<i class="ti ti-check" aria-hidden="true" style="font-size:12px;margin-right:5px;color:#0F6E56;"></i>' : '<i class="ti ti-x" aria-hidden="true" style="font-size:12px;margin-right:5px;color:#A32D2D;"></i>') + msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-
+ 
 function isVisited(id) { return visitedIds.has(id); }
-
+ 
 function makeIcon(g) {
   const cfg = sizeConfig[g.size] || sizeConfig.M;
   const isClosed = g.status === 'perm' || g.status === 'temp';
@@ -643,7 +581,7 @@ function makeIcon(g) {
   const html = `<div style="position:relative;width:36px;height:36px;"><div style="width:36px;height:36px;background:${pinBg};border:2px solid ${pinBorder};border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.22);${isClosed?'opacity:0.6;':''}"><span style="transform:rotate(45deg);font-size:15px;line-height:1;">${isClosed?'🏚️':cfg.emoji}</span></div>${check}${closedX}</div>`;
   return L.divIcon({ html, className:'', iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-38] });
 }
-
+ 
 function popupHtml(g) {
   const cfg = sizeConfig[g.size] || sizeConfig.M;
   const stCfg = statusConfig[g.status] || statusConfig.active;
@@ -658,7 +596,7 @@ function popupHtml(g) {
   const post = g.insta_post ? `<a href="${g.insta_post}" target="_blank" style="font-size:11px;color:#185FA5;text-decoration:none;display:block;margin-top:3px;">🔗 View exhibition post</a>` : '';
   return `<div style="font-family:sans-serif;min-width:175px;max-width:220px;"><div style="font-weight:600;font-size:13px;margin-bottom:3px;color:#111;">${g.name}</div><div style="font-size:11px;color:#666;margin-bottom:6px;">${g.address}</div><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:5px;"><span style="font-size:11px;background:${cfg.bg};color:white;padding:2px 8px;border-radius:10px;font-weight:500;">${cfg.emoji} ${cfg.label}</span><span style="font-size:11px;background:${stBg[g.status]||'#E1F5EE'};color:${stColors[g.status]||'#0F6E56'};padding:2px 8px;border-radius:10px;font-weight:500;">${stCfg.label}</span></div><div style="margin-bottom:5px;">${visitBtn}</div>${exh}${insta}${post}</div>`;
 }
-
+ 
 function initMap() {
   if (map) return;
   map = L.map('map', { zoomControl:true }).setView([-6.2088, 106.8456], 12);
@@ -667,7 +605,7 @@ function initMap() {
   }).addTo(map);
   renderMarkers();
 }
-
+ 
 function renderMarkers() {
   markers.forEach(m => m.remove());
   markers = [];
@@ -677,7 +615,7 @@ function renderMarkers() {
     markers.push(m);
   });
 }
-
+ 
 function renderStats() {
   const active = galleries.filter(g=>g.status==='active').length;
   const closed = galleries.filter(g=>g.status!=='active').length;
@@ -689,7 +627,7 @@ function renderStats() {
     <div class="stat"><div class="stat-label">Archived</div><div class="stat-value">${closed}</div></div>
   `;
 }
-
+ 
 function getFiltered() {
   switch(currentFilter) {
     case 'active': return galleries.filter(g=>g.status==='active');
@@ -700,20 +638,20 @@ function getFiltered() {
     default: return galleries;
   }
 }
-
+ 
 function instaHandle(raw) { return raw ? raw.replace('@','') : ''; }
-
+ 
 function instaPostCard(g) {
   if (!g.insta_post) return '';
   const handle = instaHandle(g.instagram);
   const initial = handle ? handle[0].toUpperCase() : 'I';
   return `<div class="insta-embed"><div class="insta-hdr"><div class="insta-av">${initial}</div><span class="insta-name">${g.instagram||'Instagram'}</span><a href="${g.insta_post}" class="insta-open" target="_blank"><i class="ti ti-external-link" aria-hidden="true" style="font-size:11px;margin-right:2px;vertical-align:-1px;"></i>Open post</a></div><div class="insta-prev"><i class="ti ti-brand-instagram" aria-hidden="true" style="font-size:11px;margin-right:3px;"></i>Exhibition post linked</div></div>`;
 }
-
+ 
 function showList(html) {
   document.getElementById('gallery-list').innerHTML = html;
 }
-
+ 
 function renderList() {
   const filtered = getFiltered();
   if (!filtered.length) {
@@ -752,9 +690,9 @@ function renderList() {
     </div>`;
   }).join(''));
 }
-
+ 
 function render() { renderStats(); renderList(); if (map) renderMarkers(); }
-
+ 
 function toggleVisited(id) {
   if (visitedIds.has(id)) visitedIds.delete(id);
   else visitedIds.add(id);
@@ -762,7 +700,7 @@ function toggleVisited(id) {
   render();
   showToast(visitedIds.has(id) ? 'Marked as visited' : 'Removed from visited');
 }
-
+ 
 async function updateStatus(id, newStatus) {
   setSyncing(true);
   try {
@@ -780,7 +718,7 @@ async function updateStatus(id, newStatus) {
     setSyncing(false);
   }
 }
-
+ 
 function flyToGallery(id) {
   const g = galleries.find(g=>g.id===id);
   if (!g) return;
@@ -792,30 +730,34 @@ function flyToGallery(id) {
     if (markers[idx]) markers[idx].openPopup();
   }, 150);
 }
-
+ 
 function setFilter(f, btn) {
   currentFilter = f;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderList();
 }
-
+ 
 function switchScreen(screen, btn) {
   ['map','list','add'].forEach(s => {
-    document.getElementById('screen-'+s).style.display = s===screen?'':'none';
+    document.getElementById('screen-'+s).style.display = s===screen ? '' : 'none';
   });
   document.querySelectorAll('.tab, .nav-btn').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  if (screen==='map') setTimeout(()=>{ initMap(); map.invalidateSize(); setMobileMapHeight(); }, 150);
+  if (screen==='map') {
+    /* Re-measure and set height now that element is visible */
+    setMobileMapHeight();
+    setTimeout(()=>{ initMap(); if (map) map.invalidateSize(); setMobileMapHeight(); }, 80);
+  }
   if (screen==='add') setTimeout(()=>{ if (pickerMap) pickerMap.invalidateSize(); }, 80);
 }
-
+ 
 // ===== Location picker (3 coordinate methods) =====
 let pickerMap = null;
 let pickerMarker = null;
 let currentLat = null;
 let currentLng = null;
-
+ 
 function switchMethod(method, btn) {
   document.querySelectorAll('.method-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.method-panel').forEach(p => p.classList.remove('active'));
@@ -823,7 +765,7 @@ function switchMethod(method, btn) {
   document.getElementById('panel-' + method).classList.add('active');
   if (method === 'map') initPickerMap();
 }
-
+ 
 function initPickerMap() {
   if (pickerMap) { setTimeout(()=>pickerMap.invalidateSize(), 80); return; }
   pickerMap = L.map('picker-map', { zoomControl:true }).setView([-6.2088, 106.8456], 12);
@@ -837,7 +779,7 @@ function initPickerMap() {
     document.getElementById('pin-result').classList.add('show');
   });
 }
-
+ 
 function setCoords(lat, lng, source) {
   currentLat = lat; currentLng = lng;
   const latEl = document.getElementById('coord-lat');
@@ -854,19 +796,19 @@ function setCoords(lat, lng, source) {
     pickerMap.panTo([lat, lng]);
   }
 }
-
+ 
 function onManualInput() {
   const lat = parseFloat(document.getElementById('manual-lat').value);
   const lng = parseFloat(document.getElementById('manual-lng').value);
   if (!isNaN(lat) && !isNaN(lng)) setCoords(lat, lng, 'manual');
 }
-
+ 
 function onCoordEdit() {
   const lat = parseFloat(document.getElementById('coord-lat').value);
   const lng = parseFloat(document.getElementById('coord-lng').value);
   if (!isNaN(lat) && !isNaN(lng)) setCoords(lat, lng, 'coord');
 }
-
+ 
 function extractCoordsFromUrl(url) {
   const patterns = [
     /@(-?\d+\.\d+),(-?\d+\.\d+)/,
@@ -881,12 +823,12 @@ function extractCoordsFromUrl(url) {
   }
   return null;
 }
-
+ 
 function onUrlInput() {
   const url = document.getElementById('maps-url').value.trim();
   if (url.length > 20 && extractCoordsFromUrl(url)) parseUrl();
 }
-
+ 
 async function parseUrl() {
   const url = document.getElementById('maps-url').value.trim();
   const resultEl = document.getElementById('url-result');
@@ -912,7 +854,7 @@ async function parseUrl() {
     resultEl.className = 'url-result err'; resultEl.style.display = 'flex';
   }
 }
-
+ 
 function resetLocationPicker() {
   currentLat = null; currentLng = null;
   ['coord-lat','coord-lng','manual-lat','manual-lng','maps-url'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -922,7 +864,7 @@ function resetLocationPicker() {
   document.getElementById('pin-result').classList.remove('show');
   if (pickerMarker) { pickerMarker.remove(); pickerMarker = null; }
 }
-
+ 
 async function addGallery() {
   const name = document.getElementById('new-name').value.trim();
   const address = document.getElementById('new-address').value.trim();
@@ -933,21 +875,21 @@ async function addGallery() {
   const instagram = document.getElementById('new-insta').value.trim();
   const exhibition = document.getElementById('new-exhibition').value.trim();
   const insta_post = document.getElementById('new-insta-post').value.trim();
-
+ 
   const errEl = document.getElementById('form-error');
   errEl.style.display = 'none';
-
+ 
   if (!name || !address || lat === null || lng === null || isNaN(lat) || isNaN(lng)) {
     errEl.textContent = 'Please fill in name, address, and set the location using one of the three methods.';
     errEl.style.display = 'block';
     return;
   }
-
+ 
   const btn = document.getElementById('save-btn');
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true" style="font-size:14px;animation:spin 0.8s linear infinite;"></i> Saving...';
   setSyncing(true);
-
+ 
   try {
     const result = await sbFetch('galleries', {
       method: 'POST',
@@ -971,30 +913,44 @@ async function addGallery() {
     setSyncing(false);
   }
 }
-
+ 
+/* ─── Mobile map height helper ───────────────────────────────────────────────
+   Must run BEFORE initMap() so Leaflet reads the correct container height.
+   Leaflet caches the height on init — if the div is the wrong size at that
+   moment, invalidateSize() alone won't fully recover on some devices.
+   ─────────────────────────────────────────────────────────────────────────── */
 function setMobileMapHeight() {
   if (window.innerWidth > 768) return;
-  const topBar = document.querySelector('.top-bar');
+ 
+  const topBar   = document.querySelector('.top-bar');
   const statsRow = document.querySelector('.stats-row');
-  const legend = document.querySelector('.map-legend');
-  const NAV_H = 64;
-  const chromeH = (topBar ? topBar.offsetHeight : 70)
-                + (statsRow ? statsRow.offsetHeight : 60)
-                + (legend ? legend.offsetHeight : 56)
-                + NAV_H + 28; /* margins top+bottom */
-  const mapH = Math.max(window.innerHeight - chromeH, 280);
+  const legend   = document.querySelector('.map-legend');
+  const NAV_H    = 64 + 8; /* nav height + a little breathing room */
+ 
+  const usedH = (topBar   ? topBar.offsetHeight   : 72)
+              + (statsRow ? statsRow.offsetHeight  : 62)
+              + (legend   ? legend.offsetHeight    : 54)
+              + NAV_H
+              + 26; /* map top + bottom margin */
+ 
+  const mapH  = Math.max(window.innerHeight - usedH, 260);
   const mapEl = document.getElementById('map');
+ 
   if (mapEl) {
+    /* Use setProperty with 'important' to beat both CSS rules and
+       any inline style Leaflet may have already written */
     mapEl.style.setProperty('height', mapH + 'px', 'important');
-    if (map) map.invalidateSize();
   }
+  /* Tell Leaflet the container changed if it's already initialised */
+  if (map) setTimeout(() => map.invalidateSize(), 30);
 }
-
+ 
 document.getElementById('gallery-list').innerHTML = '<div class="loading-overlay"><div class="spinner"></div>Loading galleries from database...</div>';
-setTimeout(initMap, 300);
+ 
+/* Set height FIRST, then init Leaflet so it reads the right size */
+setMobileMapHeight();
+setTimeout(initMap, 100);
 loadGalleries();
-
-/* Run height fix after everything paints */
-window.addEventListener('load', () => setTimeout(setMobileMapHeight, 200));
-window.addEventListener('resize', setMobileMapHeight);
+ 
+window.addEventListener('resize', () => { setMobileMapHeight(); });
 </script>
