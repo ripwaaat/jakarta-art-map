@@ -1,3 +1,4 @@
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -224,7 +225,7 @@ body {
   flex-direction: column;
 }
 #screen-map {
-  min-height: calc(100dvh - 150px);
+  min-height: 0;
 }
 #map {
   border-radius: 18px;
@@ -275,48 +276,44 @@ body {
 }
 
 /* ==========================================================
-   MOBILE LAYOUT FIX — FULL-HEIGHT MAP + BIGGER UI
+   MOBILE LAYOUT — dvh-calc approach (avoids flex-stretch issues)
+   iPhone 12 Pro: 844px tall
+   Fixed chrome: top-bar ~70px + stats ~60px + bottom-nav ~64px = ~194px
+   Map+legend fill the remaining ~650px
    ========================================================== */
+
+/* CSS custom property so JS can update it on resize */
+:root { --mobile-chrome: 194px; }
+
 @media (max-width: 768px) {
-  html, body {
-    height: 100%;
-    overflow: hidden;
-  }
+  html, body { height: 100dvh; overflow: hidden; background: #f7f5ef; }
 
-  body {
-    background: #f7f5ef;
-  }
-
-  /* The app shell fills the full viewport and stacks vertically */
   .app {
     height: 100dvh;
-    max-height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
 
-  /* --- Top bar --- */
+  /* ── Chrome pieces — all flex-shrink:0 so they take fixed space ── */
   .top-bar {
-    border-radius: 0 0 18px 18px;
-    padding: 14px 16px;
     flex-shrink: 0;
+    border-radius: 0 0 18px 18px;
+    padding: 14px 16px 12px;
   }
   .top-bar h1 { font-size: 18px; }
   .top-bar p  { font-size: 12px; margin-top: 3px; }
 
-  /* --- Stats row --- */
   .stats-row {
-    position: static;
+    flex-shrink: 0;
+    position: static !important;        /* kill sticky so it participates in flex */
     padding: 10px 12px;
     gap: 8px;
-    flex-shrink: 0;
   }
-  .stat        { padding: 10px 12px; border-radius: 14px; }
-  .stat-label  { font-size: 12px; }
-  .stat-value  { font-size: 20px; font-weight: 600; }
+  .stat       { padding: 10px 12px; border-radius: 14px; }
+  .stat-label { font-size: 12px; }
+  .stat-value { font-size: 20px; font-weight: 600; }
 
-  /* --- Hide desktop tab-bar; show bottom nav --- */
   .tab-bar { display: none !important; }
 
   .bottom-nav {
@@ -328,69 +325,59 @@ body {
     background: rgba(255,255,255,0.97);
     box-shadow: 0 -4px 16px rgba(0,0,0,0.07);
     z-index: 2000;
-    flex-shrink: 0;
   }
   .nav-btn   { font-size: 12px; font-weight: 500; }
   .nav-btn i { font-size: 24px; }
 
-  /* --- Generic scrollable screens (list, add) --- */
+  /* ── Generic scrollable screens ── */
   .screen {
     flex: 1;
-    display: flex;
-    flex-direction: column;
+    min-height: 0;
     overflow-y: auto;
-    /* leave room for the fixed bottom nav */
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* ── MAP SCREEN: stretch to fill every remaining pixel ── */
+  /* ── MAP SCREEN — explicit height, no flex magic needed ── */
   #screen-map {
-    /* Override the generic .screen padding-bottom — map handles its own spacing */
-    padding-bottom: 0 !important;
+    /* Don't scroll; let children size themselves */
     overflow: hidden !important;
+    padding-bottom: 0 !important;
+    /* Explicitly size to remaining viewport minus fixed nav */
+    flex: 1 1 auto;
+    min-height: 0;
     display: flex !important;
     flex-direction: column;
-    /* fill the space between stats-row and bottom-nav */
-    flex: 1;
-    min-height: 0;
   }
 
-  /* The map tile fills all leftover height above the legend */
+  /* Override the base #map fixed height with an explicit dvh-based value.
+     This wins over Leaflet's inline style because we apply it via JS too. */
   #map {
-    flex: 1 1 auto !important;
-    width: calc(100% - 24px) !important;
-    /* Reset fixed heights from desktop rules */
-    height: auto !important;
-    min-height: 0 !important;
+    /* fallback fixed height — good approximation for iPhone 12 Pro */
+    height: calc(100dvh - 260px) !important;
+    min-height: 300px !important;
     max-height: none !important;
+    width: calc(100% - 24px) !important;
     margin: 10px 12px 8px !important;
-    border-radius: 18px;
+    border-radius: 18px !important;
     box-shadow: 0 4px 16px rgba(0,0,0,0.09);
+    flex-shrink: 0;
   }
 
-  /* Legend sits below the map and does not grow */
   .map-legend {
     flex-shrink: 0;
-    margin: 0 12px calc(64px + env(safe-area-inset-bottom, 8px) + 8px) !important;
+    margin: 0 12px calc(64px + env(safe-area-inset-bottom, 0px) + 8px) !important;
     padding: 10px 12px;
     gap: 8px 14px;
     border-radius: 14px;
   }
-  .legend-item  { font-size: 13px; gap: 7px; }
-  .legend-dot   { width: 26px; height: 26px; font-size: 13px; }
+  .legend-item { font-size: 13px; gap: 7px; }
+  .legend-dot  { width: 26px; height: 26px; font-size: 13px; }
 
-  /* --- Gallery list — bigger fonts & touch targets --- */
-  .list-toolbar {
-    padding: 12px 14px;
-    gap: 8px;
-  }
-  .filter-btn { font-size: 13px; padding: 7px 15px; }
+  /* ── Gallery list ── */
+  .list-toolbar { padding: 12px 14px; gap: 8px; }
+  .filter-btn   { font-size: 13px; padding: 7px 15px; }
 
-  .gallery-grid {
-    grid-template-columns: 1fr;
-    padding: 12px 14px;
-    gap: 14px;
-  }
+  .gallery-grid  { grid-template-columns: 1fr; padding: 12px 14px; gap: 14px; }
   .gallery-card  { padding: 18px; border-radius: 18px; }
   .card-name     { font-size: 17px !important; font-weight: 600; color: #111; }
   .card-address  { font-size: 14px !important; line-height: 1.5; color: #333; margin-top: 5px; }
@@ -399,42 +386,28 @@ body {
   .badge-row     { gap: 6px; margin-top: 9px; }
   .exh-block     { font-size: 13px; padding: 9px 12px; }
 
-  /* Action buttons — full-width, finger-friendly */
-  .card-actions {
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 14px;
-  }
-  .btn-sm {
-    font-size: 14px;
-    min-height: 48px;
-    width: 100%;
-    border-radius: 12px;
-  }
-  .status-select {
-    width: 100%;
-    min-height: 48px;
-    font-size: 14px;
-  }
+  .card-actions  { flex-direction: column; gap: 8px; margin-top: 14px; }
+  .btn-sm        { font-size: 14px; min-height: 48px; width: 100%; border-radius: 12px; }
+  .status-select { width: 100%; min-height: 48px; font-size: 14px; }
 
-  /* --- Add gallery form --- */
-  .add-screen    { padding: 14px 14px; }
-  .form-card     { padding: 18px; border-radius: 18px; margin-bottom: 14px; }
-  .form-card h2  { font-size: 16px; margin-bottom: 14px; }
-  label          { font-size: 13px; font-weight: 500; }
+  /* ── Add gallery form ── */
+  .add-screen   { padding: 14px; }
+  .form-card    { padding: 18px; border-radius: 18px; margin-bottom: 14px; }
+  .form-card h2 { font-size: 16px; margin-bottom: 14px; }
+  label         { font-size: 13px; font-weight: 500; }
 
   input, select, textarea {
     min-height: 48px;
     border-radius: 12px;
     padding: 12px 14px;
-    font-size: 16px; /* ≥16px prevents iOS Safari auto-zoom on focus */
+    font-size: 16px;   /* prevents iOS Safari auto-zoom */
   }
   textarea { min-height: 96px; }
 
-  .coord-vals    { flex-direction: column; gap: 8px; }
-  .method-tabs   { overflow-x: auto; white-space: nowrap; gap: 8px; }
-  .method-tab    { min-width: 110px; flex: unset; font-size: 13px; padding: 10px 8px; }
-  .btn-save      { font-size: 15px; min-height: 50px; }
+  .coord-vals  { flex-direction: column; gap: 8px; }
+  .method-tabs { overflow-x: auto; white-space: nowrap; gap: 8px; }
+  .method-tab  { min-width: 110px; flex: unset; font-size: 13px; padding: 10px 8px; }
+  .btn-save    { font-size: 15px; min-height: 50px; }
   .archived-note { font-size: 12px; padding: 10px 14px; }
 }
 
@@ -833,7 +806,7 @@ function switchScreen(screen, btn) {
   });
   document.querySelectorAll('.tab, .nav-btn').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  if (screen==='map') setTimeout(()=>{ initMap(); map.invalidateSize(); }, 150);
+  if (screen==='map') setTimeout(()=>{ initMap(); map.invalidateSize(); setMobileMapHeight(); }, 150);
   if (screen==='add') setTimeout(()=>{ if (pickerMap) pickerMap.invalidateSize(); }, 80);
 }
 
@@ -999,7 +972,29 @@ async function addGallery() {
   }
 }
 
+function setMobileMapHeight() {
+  if (window.innerWidth > 768) return;
+  const topBar = document.querySelector('.top-bar');
+  const statsRow = document.querySelector('.stats-row');
+  const legend = document.querySelector('.map-legend');
+  const NAV_H = 64;
+  const chromeH = (topBar ? topBar.offsetHeight : 70)
+                + (statsRow ? statsRow.offsetHeight : 60)
+                + (legend ? legend.offsetHeight : 56)
+                + NAV_H + 28; /* margins top+bottom */
+  const mapH = Math.max(window.innerHeight - chromeH, 280);
+  const mapEl = document.getElementById('map');
+  if (mapEl) {
+    mapEl.style.setProperty('height', mapH + 'px', 'important');
+    if (map) map.invalidateSize();
+  }
+}
+
 document.getElementById('gallery-list').innerHTML = '<div class="loading-overlay"><div class="spinner"></div>Loading galleries from database...</div>';
 setTimeout(initMap, 300);
 loadGalleries();
+
+/* Run height fix after everything paints */
+window.addEventListener('load', () => setTimeout(setMobileMapHeight, 200));
+window.addEventListener('resize', setMobileMapHeight);
 </script>
